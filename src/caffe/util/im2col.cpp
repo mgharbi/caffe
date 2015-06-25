@@ -51,7 +51,6 @@ void col2im_cpu(const Dtype* data_col, const int channels,
         const int stride_h, const int stride_w,
         Dtype* data_im) {
     caffe_set(height * width * channels, Dtype(0), data_im);
-    int *count = new int[height*width*channels]();
     int height_col   = (height + 2 * pad_h - patch_h) / stride_h + 1;
     int width_col    = (width + 2 * pad_w - patch_w) / stride_w + 1;
     int channels_col = channels * patch_h * patch_w;
@@ -66,17 +65,10 @@ void col2im_cpu(const Dtype* data_col, const int channels,
                 if (h_pad >= 0 && h_pad < height && w_pad >= 0 && w_pad < width) {
                     data_im[(c_im * height + h_pad) * width + w_pad] +=
                         data_col[(c * height_col + h) * width_col + w];
-                    count[(c_im * height + h_pad) * width + w_pad] += 1;
                 }
             }
         }
     }
-    for (int i = 0; i < height*width*channels; ++i) {
-        if(count[i] > 0) {
-            data_im[i] /= count[i];
-        }
-    }
-    delete count;
 }
 
 // Explicit instantiation
