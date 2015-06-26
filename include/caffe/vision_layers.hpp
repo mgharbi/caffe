@@ -46,7 +46,6 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   void weight_cpu_gemm(const Dtype* input, const Dtype* output, Dtype*
       weights);
   void backward_cpu_bias(Dtype* bias, const Dtype* input);
-  void normalize_boundaries(const Dtype* input, Dtype* output);
 
 #ifndef CPU_ONLY
   void forward_gpu_gemm(const Dtype* col_input, const Dtype* weights,
@@ -77,6 +76,16 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   bool bias_term_;
   bool is_1x1_;
 
+  int conv_out_channels_;
+  int conv_in_channels_;
+  int conv_out_spatial_dim_;
+  int conv_in_height_;
+  int conv_in_width_;
+  int kernel_dim_;
+  int weight_offset_;
+  int col_offset_;
+  int output_offset_;
+
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists
   inline void conv_im2col_cpu(const Dtype* data, Dtype* col_buff) {
@@ -98,15 +107,6 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   }
 #endif
 
-  int conv_out_channels_;
-  int conv_in_channels_;
-  int conv_out_spatial_dim_;
-  int conv_in_height_;
-  int conv_in_width_;
-  int kernel_dim_;
-  int weight_offset_;
-  int col_offset_;
-  int output_offset_;
 
   Blob<Dtype> col_buffer_;
   Blob<Dtype> bias_multiplier_;
@@ -198,6 +198,9 @@ class DeconvolutionLayer : public BaseConvolutionLayer<Dtype> {
       : BaseConvolutionLayer<Dtype>(param) {}
 
   virtual inline const char* type() const { return "Deconvolution"; }
+
+  void normalize_boundaries_cpu(const Dtype* input, Dtype* output);
+  void normalize_boundaries_gpu(const Dtype* input, Dtype* output);
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
