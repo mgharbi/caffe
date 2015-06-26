@@ -182,16 +182,16 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_bias(Dtype* output,
 }
 
 template <typename Dtype>
-void BaseConvolutionLayer<Dtype>::normalize_boundaries(Dtype* output) {
+void BaseConvolutionLayer<Dtype>::normalize_boundaries(const Dtype* input, Dtype* output) {
     int channels = conv_in_channels_;
-    int height = conv_in_height_;
-    int width = conv_in_width_;
-    int pad_h = pad_h_;
-    int pad_w = pad_w_;
+    int height   = conv_in_height_;
+    int width    = conv_in_width_;
+    int pad_h    = pad_h_;
+    int pad_w    = pad_w_;
     int stride_h = stride_h_;
     int stride_w = stride_w_;
-    int patch_h = kernel_h_;
-    int patch_w = kernel_w_;
+    int patch_h  = kernel_h_;
+    int patch_w  = kernel_w_;
 
     int *count = new int[height*width*channels]();
     int height_col   = (height + 2 * pad_h - patch_h) / stride_h + 1;
@@ -213,7 +213,9 @@ void BaseConvolutionLayer<Dtype>::normalize_boundaries(Dtype* output) {
     }
     for (int i = 0; i < height*width*channels; ++i) {
         if(count[i] > 0) {
-            output[i] /= count[i];
+            output[i] = input[i]/count[i];
+        }else {
+            output[i] = input[i];
         }
     }
     delete count;
