@@ -9,7 +9,7 @@
 namespace caffe {
 
 template <typename Dtype>
-void DeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+void NormalizedDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top) {
     const Dtype* weight = this->blobs_[0]->gpu_data();
     bool doNormalize = true;
@@ -31,7 +31,7 @@ void DeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void DeconvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+void NormalizedDeconvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
         const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
     const Dtype* weight = this->blobs_[0]->gpu_data();
     Dtype* weight_diff = this->blobs_[0]->mutable_gpu_diff();
@@ -139,7 +139,7 @@ __global__ void normalize_boundaries_gpu_kernel(const Dtype* input, Dtype* outpu
 }
 
 template <typename Dtype>
-void DeconvolutionLayer<Dtype>::normalize_boundaries_gpu(const Dtype* input, Dtype* output)
+void NormalizedDeconvolutionLayer<Dtype>::normalize_boundaries_gpu(const Dtype* input, Dtype* output)
 {
     int channels = this->conv_in_channels_;
     int height   = this->conv_in_height_;
@@ -161,6 +161,6 @@ void DeconvolutionLayer<Dtype>::normalize_boundaries_gpu(const Dtype* input, Dty
     CUDA_POST_KERNEL_CHECK;
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(DeconvolutionLayer);
+INSTANTIATE_LAYER_GPU_FUNCS(NormalizedDeconvolutionLayer);
 
 }  // namespace caffe

@@ -81,8 +81,9 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
     height = crop_size;
     width  = crop_size;
     // We only do random crop when we do training.
-    if (do_random_crop) {
     // if (phase_ == TRAIN) {
+    // XXX: Mika changed this
+    if (do_random_crop) {
       h_off = Rand(datum_height - crop_size + 1);
       w_off = Rand(datum_width - crop_size + 1);
     } else {

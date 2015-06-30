@@ -9,7 +9,7 @@
 namespace caffe {
 
 template <typename Dtype>
-void DeconvolutionLayer<Dtype>::compute_output_shape() {
+void NormalizedDeconvolutionLayer<Dtype>::compute_output_shape() {
   this->height_out_ = this->stride_h_ * (this->height_ - 1) + this->kernel_h_
       - 2 * this->pad_h_;
   this->width_out_ = this->stride_w_ * (this->width_ - 1) + this->kernel_w_
@@ -17,7 +17,7 @@ void DeconvolutionLayer<Dtype>::compute_output_shape() {
 }
 
 template <typename Dtype>
-void DeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+void NormalizedDeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top) {
 
     bool doNormalize = true;
@@ -40,7 +40,7 @@ void DeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void DeconvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+void NormalizedDeconvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   const Dtype* weight = this->blobs_[0]->cpu_data();
   Dtype* weight_diff = this->blobs_[0]->mutable_cpu_diff();
@@ -116,7 +116,7 @@ void DeconvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 }
 
 template <typename Dtype>
-void DeconvolutionLayer<Dtype>::normalize_boundaries_cpu(const Dtype* input, Dtype* output) {
+void NormalizedDeconvolutionLayer<Dtype>::normalize_boundaries_cpu(const Dtype* input, Dtype* output) {
     int channels = this->conv_in_channels_;
     int height   = this->conv_in_height_;
     int width    = this->conv_in_width_;
@@ -156,10 +156,10 @@ void DeconvolutionLayer<Dtype>::normalize_boundaries_cpu(const Dtype* input, Dty
 }
 
 #ifdef CPU_ONLY
-STUB_GPU(DeconvolutionLayer);
+STUB_GPU(NormalizedDeconvolutionLayer);
 #endif
 
-INSTANTIATE_CLASS(DeconvolutionLayer);
-REGISTER_LAYER_CLASS(Deconvolution);
+INSTANTIATE_CLASS(NormalizedDeconvolutionLayer);
+REGISTER_LAYER_CLASS(NormalizedDeconvolution);
 
 }  // namespace caffe
