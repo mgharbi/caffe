@@ -181,7 +181,6 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_bias(Dtype* output,
       (Dtype)1., output);
 }
 
-
 template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::backward_cpu_gemm(const Dtype* output,
     const Dtype* weights, Dtype* input) {

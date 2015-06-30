@@ -37,16 +37,17 @@ DataTransformer<Dtype>::DataTransformer(const TransformationParameter& param,
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const Datum& datum,
                                        Dtype* transformed_data) {
-  const string& data = datum.data();
+  const string& data       = datum.data();
   const int datum_channels = datum.channels();
-  const int datum_height = datum.height();
-  const int datum_width = datum.width();
+  const int datum_height   = datum.height();
+  const int datum_width    = datum.width();
 
-  const int crop_size = param_.crop_size();
-  const Dtype scale = param_.scale();
-  const bool do_mirror = param_.mirror() && Rand(2);
-  const bool has_mean_file = param_.has_mean_file();
-  const bool has_uint8 = data.size() > 0;
+  const bool do_random_crop  = param_.random_crop();
+  const int crop_size        = param_.crop_size();
+  const Dtype scale          = param_.scale();
+  const bool do_mirror       = param_.mirror() && Rand(2);
+  const bool has_mean_file   = param_.has_mean_file();
+  const bool has_uint8       = data.size() > 0;
   const bool has_mean_values = mean_values_.size() > 0;
 
   CHECK_GT(datum_channels, 0);
@@ -78,9 +79,10 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
   int w_off = 0;
   if (crop_size) {
     height = crop_size;
-    width = crop_size;
+    width  = crop_size;
     // We only do random crop when we do training.
-    if (phase_ == TRAIN) {
+    if (do_random_crop) {
+    // if (phase_ == TRAIN) {
       h_off = Rand(datum_height - crop_size + 1);
       w_off = Rand(datum_width - crop_size + 1);
     } else {
