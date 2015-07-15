@@ -556,14 +556,15 @@ class CropLayer : public Layer<Dtype> {
                 const vector<Blob<Dtype>*>& top);
 
         virtual inline const char* type() const { return "Crop"; }
+
         virtual inline int ExactNumBottomBlobs() const { return 2; }
         virtual inline int ExactNumTopBlobs() const { return 1; }
-        virtual inline DiagonalAffineMap<Dtype> coord_map() {
-            vector<pair<Dtype, Dtype> > coefs;
-            coefs.push_back(make_pair(1, - crop_h_));
-            coefs.push_back(make_pair(1, - crop_w_));
-            return DiagonalAffineMap<Dtype>(coefs);
-        }
+        // virtual inline DiagonalAffineMap<Dtype> coord_map() {
+        //     vector<pair<Dtype, Dtype> > coefs;
+        //     coefs.push_back(make_pair(1, - crop_h_));
+        //     coefs.push_back(make_pair(1, - crop_w_));
+        //     return DiagonalAffineMap<Dtype>(coefs);
+        // }
 
     protected:
         virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
