@@ -31,6 +31,11 @@ class Solver {
   // previously snapshotted state. You should implement the RestoreSolverState()
   // function that restores the state from a SolverState protocol buffer.
   void Restore(const char* resume_file);
+  // The Solver::Snapshot function implements the basic snapshotting utility
+  // that stores the learned net. You should implement the SnapshotSolverState()
+  // function that produces a SolverState protocol buffer that needs to be
+  // written to disk together with the learned net.
+  void Snapshot();
   virtual ~Solver() {}
   inline shared_ptr<Net<Dtype> > net() { return net_; }
   inline const vector<shared_ptr<Net<Dtype> > >& test_nets() {
@@ -41,11 +46,6 @@ class Solver {
  protected:
   // Make and apply the update value for the current iteration.
   virtual void ApplyUpdate() = 0;
-  // The Solver::Snapshot function implements the basic snapshotting utility
-  // that stores the learned net. You should implement the SnapshotSolverState()
-  // function that produces a SolverState protocol buffer that needs to be
-  // written to disk together with the learned net.
-  void Snapshot();
   // The test routine
   void TestAll();
   void Test(const int test_net_id = 0);
