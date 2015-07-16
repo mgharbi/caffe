@@ -81,7 +81,6 @@ __global__ void col2im_gpu_kernel(const int n, const Dtype* data_col,
 
   CUDA_KERNEL_LOOP(index, n) {
     Dtype val = 0;
-    // int vcount = 0;
     int w = index % width + pad_w;
     int h = (index / width) % height + pad_h;
     int c = index / (width * height);
@@ -99,13 +98,9 @@ __global__ void col2im_gpu_kernel(const int n, const Dtype* data_col,
     for (int h_col = h_col_start; h_col < h_col_end; ++h_col) {
       for (int w_col = w_col_start; w_col < w_col_end; ++w_col) {
         val += data_col[offset + h_col * coeff_h_col + w_col * coeff_w_col];
-        // vcount += 1;
       }
     }
     data_im[index] = val;
-    // if(vcount > 0) {
-    //     data_im[index] /= vcount;
-    // }
   }
 }
 

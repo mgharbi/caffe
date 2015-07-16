@@ -124,11 +124,11 @@ TYPED_TEST(NormalizedDeconvolutionLayerTest, TestSimpleDeconvolution) {
             && h < this->blob_top_->height() - 1;
           bool w_overlap = w % 2 == 0 && w > 0
             && w < this->blob_top_->width() - 1;
-          if (h_overlap && w_overlap) {
-            expected += 9;
-          } else if (h_overlap || w_overlap) {
-            expected += 3;
-          }
+          // if (h_overlap && w_overlap) {
+          //   expected += 9;
+          // } else if (h_overlap || w_overlap) {
+          //   expected += 3;
+          // }
           EXPECT_NEAR(top_data[this->blob_top_->offset(n, c, h, w)],
               expected, 1e-4);
         }
