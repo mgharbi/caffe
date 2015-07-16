@@ -111,10 +111,14 @@ def choose_color_by_layertype(layertype):
     color = '#6495ED'  # Default
     if layertype == 'Convolution':
         color = '#FF5050'
+    elif layertype == 'Deconvolution' or layertype == 'NormalizedDeconvolution':
+        color = '#FF7F94'
     elif layertype == 'Pooling':
         color = '#FF9900'
     elif layertype == 'InnerProduct':
         color = '#CC33FF'
+    elif layertype == "Data":
+        color = '#FBC443'
     return color
 
 

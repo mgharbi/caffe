@@ -42,7 +42,6 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
   const int datum_height   = datum.height();
   const int datum_width    = datum.width();
 
-  const bool do_random_crop  = param_.random_crop();
   const int crop_size        = param_.crop_size();
   const Dtype scale          = param_.scale();
   const bool do_mirror       = param_.mirror() && Rand(2);
@@ -81,9 +80,7 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
     height = crop_size;
     width  = crop_size;
     // We only do random crop when we do training.
-    // if (phase_ == TRAIN) {
-    // XXX: Mika changed this
-    if (do_random_crop) {
+    if (phase_ == TRAIN) {
       h_off = Rand(datum_height - crop_size + 1);
       w_off = Rand(datum_width - crop_size + 1);
     } else {
