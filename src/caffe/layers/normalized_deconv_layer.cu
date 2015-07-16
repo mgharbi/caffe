@@ -12,7 +12,6 @@ template <typename Dtype>
 void NormalizedDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top) {
     const Dtype* weight = this->blobs_[0]->gpu_data();
-    bool doNormalize = true;
     for (int i = 0; i < bottom.size(); ++i) {
         const Dtype* bottom_data = bottom[i]->gpu_data();
         Dtype* top_data = top[i]->mutable_gpu_data();
@@ -23,9 +22,7 @@ void NormalizedDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>
                 const Dtype* bias = this->blobs_[1]->gpu_data();
                 this->forward_gpu_bias(top_data + top[i]->offset(n), bias);
             }
-            if(doNormalize){ // Normalize boundaries
-                this->normalize_boundaries_gpu(top_data + top[i]->offset(n), top_data + top[i]->offset(n));
-            }
+            this->normalize_boundaries_gpu(top_data + top[i]->offset(n), top_data + top[i]->offset(n));
         }
     }
 }
@@ -40,8 +37,6 @@ void NormalizedDeconvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*
         const Dtype* bottom_data = bottom[i]->gpu_data();
         Dtype* bottom_diff = bottom[i]->mutable_gpu_diff();
 
-        bool doNormalize = true;
-
         // Bias gradient, if necessary.
         if (this->bias_term_ && this->param_propagate_down_[1]) {
             Dtype* bias_diff = this->blobs_[1]->mutable_gpu_diff();
@@ -50,15 +45,11 @@ void NormalizedDeconvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*
             shape[1] = top[i]->shape(1);
             shape[2] = top[i]->shape(2);
             shape[3] = top[i]->shape(3);
-            Blob<Dtype> normalized(shape);
-            Dtype * norm_diff = normalized.mutable_gpu_data();
+            // Blob<Dtype> normalized(shape);
+            // Dtype * norm_diff = normalized.mutable_gpu_data();
             for (int n = 0; n < this->num_; ++n) {
-                if(doNormalize) {
-                    this->normalize_boundaries_gpu(top_diff + top[i]->offset(n), norm_diff);
-                    this->backward_gpu_bias(bias_diff, norm_diff);
-                } else {
+                    // this->normalize_boundaries_gpu(top_diff + top[i]->offset(n), norm_diff);
                     this->backward_gpu_bias(bias_diff, top_diff + top[i]->offset(n));
-                }
             }
         }
         if (this->param_propagate_down_[0] || propagate_down[i]) {
@@ -67,32 +58,19 @@ void NormalizedDeconvolutionLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*
             shape[1] = top[i]->shape(1);
             shape[2] = top[i]->shape(2);
             shape[3] = top[i]->shape(3);
-            Blob<Dtype> normalized(shape);
-            Dtype * norm_diff = normalized.mutable_gpu_data();
+            // Blob<Dtype> normalized(shape);
+            // Dtype * norm_diff = normalized.mutable_gpu_data();
             for (int n = 0; n < this->num_; ++n) {
-                if(doNormalize) {
-                    this->normalize_boundaries_gpu(top_diff + top[i]->offset(n), norm_diff);
-                    // gradient w.r.t. weight. Note that we will accumulate diffs.
-                    if (this->param_propagate_down_[0]) {
-                        this->weight_gpu_gemm(norm_diff,
-                                bottom_data + bottom[i]->offset(n), weight_diff);
-                    }
-                    // gradient w.r.t. bottom data, if necessary.
-                    if (propagate_down[i]) {
-                        this->forward_gpu_gemm(norm_diff, weight,
-                                bottom_diff + bottom[i]->offset(n));
-                    }
-                } else {
-                    // gradient w.r.t. weight. Note that we will accumulate diffs.
-                    if (this->param_propagate_down_[0]) {
-                        this->weight_gpu_gemm(top_diff + top[i]->offset(n),
-                                bottom_data + bottom[i]->offset(n), weight_diff);
-                    }
-                    // gradient w.r.t. bottom data, if necessary.
-                    if (propagate_down[i]) {
-                        this->forward_gpu_gemm(top_diff + top[i]->offset(n), weight,
-                                bottom_diff + bottom[i]->offset(n));
-                    }
+                // this->normalize_boundaries_gpu(top_diff + top[i]->offset(n), norm_diff);
+                // gradient w.r.t. weight. Note that we will accumulate diffs.
+                if (this->param_propagate_down_[0]) {
+                    this->weight_gpu_gemm(top_diff + top[i]->offset(n),
+                            bottom_data + bottom[i]->offset(n), weight_diff);
+                }
+                // gradient w.r.t. bottom data, if necessary.
+                if (propagate_down[i]) {
+                    this->forward_gpu_gemm(top_diff + top[i]->offset(n), weight,
+                            bottom_diff + bottom[i]->offset(n));
                 }
             }
         }
@@ -109,7 +87,6 @@ __global__ void normalize_boundaries_gpu_kernel(const Dtype* input, Dtype* outpu
 )
 {
   CUDA_KERNEL_LOOP(index, n) {
-    // Dtype val = 0;
     int vcount = 0;
     int w = index % width + pad_w;
     int h = (index / width) % height + pad_h;
@@ -120,16 +97,12 @@ __global__ void normalize_boundaries_gpu_kernel(const Dtype* input, Dtype* outpu
     int h_col_start = (h < kernel_h) ? 0 : (h - kernel_h) / stride_h + 1;
     int h_col_end = min(h / stride_h + 1, height_col);
 
-    // int offset = (c * kernel_h * kernel_w + h * kernel_w + w) * height_col * width_col;
-    // int coeff_h_col = (1 - stride_h * kernel_w * height_col) * width_col;
-    // int coeff_w_col = (1 - stride_w * height_col * width_col);
     for (int h_col = h_col_start; h_col < h_col_end; ++h_col) {
       for (int w_col = w_col_start; w_col < w_col_end; ++w_col) {
-        // val += data_col[offset + h_col * coeff_h_col + w_col * coeff_w_col];
         vcount += 1;
       }
     }
-    // data_im[index] = val;
+    // output[index] =  vcount;
     if(vcount > 0) {
         output[index] = input[index]/ vcount;
     } else {

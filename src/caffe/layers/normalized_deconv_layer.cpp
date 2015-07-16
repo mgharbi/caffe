@@ -20,7 +20,6 @@ template <typename Dtype>
 void NormalizedDeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top) {
 
-    bool doNormalize = true;
     const Dtype* weight = this->blobs_[0]->cpu_data();
     for (int i = 0; i < bottom.size(); ++i) {
         const Dtype* bottom_data = bottom[i]->cpu_data();
@@ -32,9 +31,7 @@ void NormalizedDeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>
                 const Dtype* bias = this->blobs_[1]->cpu_data();
                 this->forward_cpu_bias(top_data + top[i]->offset(n), bias);
             }
-            if(doNormalize){ // Normalize boundaries
-                this->normalize_boundaries_cpu(top_data + top[i]->offset(n), top_data + top[i]->offset(n));
-            }
+            this->normalize_boundaries_cpu(top_data + top[i]->offset(n), top_data + top[i]->offset(n));
         }
     }
 }
@@ -49,8 +46,6 @@ void NormalizedDeconvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*
     const Dtype* bottom_data = bottom[i]->cpu_data();
     Dtype* bottom_diff = bottom[i]->mutable_cpu_diff();
 
-    bool doNormalize = true;
-    
     // Bias gradient, if necessary.
     if (this->bias_term_ && this->param_propagate_down_[1]) {
       Dtype* bias_diff = this->blobs_[1]->mutable_cpu_diff();
@@ -59,58 +54,40 @@ void NormalizedDeconvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*
       shape[1] = top[i]->shape(1);
       shape[2] = top[i]->shape(2);
       shape[3] = top[i]->shape(3);
-      Blob<Dtype> normalized(shape);
-      Dtype * norm_diff = normalized.mutable_cpu_data();
+      // Blob<Dtype> normalized(shape);
+      // Dtype * norm_diff = normalized.mutable_cpu_data();
       // Dtype *normalized = new Dtype[top[i]->offset(1)]();
       for (int n = 0; n < this->num_; ++n) {
-          if(doNormalize) {
-              this->normalize_boundaries_cpu(top_diff + top[i]->offset(n), norm_diff);
-              this->backward_cpu_bias(bias_diff, norm_diff);
-          } else {
-              this->backward_cpu_bias(bias_diff, top_diff + top[i]->offset(n));
-          }
+          // this->normalize_boundaries_cpu(top_diff + top[i]->offset(n), norm_diff);
+          this->backward_cpu_bias(bias_diff, top_diff + top[i]->offset(n));
       }
       // delete normalized;
     }
 
     if (this->param_propagate_down_[0] || propagate_down[i]) {
-      vector<int> shape(4);
-      shape[0] = 1;
-      shape[1] = top[i]->shape(1);
-      shape[2] = top[i]->shape(2);
-      shape[3] = top[i]->shape(3);
-      Blob<Dtype> normalized(shape);
-      Dtype * norm_diff = normalized.mutable_cpu_data();
-      for (int n = 0; n < this->num_; ++n) {
-          if(doNormalize) {
-              this->normalize_boundaries_cpu(top_diff + top[i]->offset(n), norm_diff);
-              // Gradient w.r.t. weight. Note that we will accumulate diffs.
-              if (this->param_propagate_down_[0]) {
-                  this->weight_cpu_gemm(norm_diff,
-                          bottom_data + bottom[i]->offset(n), weight_diff);
-                  // Gradient w.r.t. bottom data, if necessary, reusing the column buffer
-                  // we might have just computed above.
-              }
-              if (propagate_down[i]) {
-                  this->forward_cpu_gemm(norm_diff, weight,
-                          bottom_diff + bottom[i]->offset(n),
-                          this->param_propagate_down_[0]);
-              } 
-          } else {
-              // Gradient w.r.t. weight. Note that we will accumulate diffs.
-              if (this->param_propagate_down_[0]) {
-                  this->weight_cpu_gemm(top_diff + top[i]->offset(n),
-                          bottom_data + bottom[i]->offset(n), weight_diff);
-                  // Gradient w.r.t. bottom data, if necessary, reusing the column buffer
-                  // we might have just computed above.
-              }
-              if (propagate_down[i]) {
-                  this->forward_cpu_gemm(top_diff + top[i]->offset(n), weight,
-                          bottom_diff + bottom[i]->offset(n),
-                          this->param_propagate_down_[0]);
-              } 
-          }
-      }
+        vector<int> shape(4);
+        shape[0] = 1;
+        shape[1] = top[i]->shape(1);
+        shape[2] = top[i]->shape(2);
+        shape[3] = top[i]->shape(3);
+        // Blob<Dtype> normalized(shape);
+        // Dtype * norm_diff = normalized.mutable_cpu_data();
+        for (int n = 0; n < this->num_; ++n) {
+            // this->normalize_boundaries_cpu(top_diff + top[i]->offset(n), norm_diff);
+            
+            // Gradient w.r.t. weight. Note that we will accumulate diffs.
+            if (this->param_propagate_down_[0]) {
+                this->weight_cpu_gemm(top_diff + top[i]->offset(n),
+                        bottom_data + bottom[i]->offset(n), weight_diff);
+                // Gradient w.r.t. bottom data, if necessary, reusing the column buffer
+                // we might have just computed above.
+            }
+            if (propagate_down[i]) {
+                this->forward_cpu_gemm(top_diff + top[i]->offset(n), weight,
+                        bottom_diff + bottom[i]->offset(n),
+                        this->param_propagate_down_[0]);
+            } 
+        }
     }
   }
 }
