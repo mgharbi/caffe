@@ -321,6 +321,7 @@ message LayerParameter {
   optional ConcatParameter concat_param = 104;
   optional ContrastiveLossParameter contrastive_loss_param = 105;
   optional ConvolutionParameter convolution_param = 106;
+  optional CropParameter crop_param = 137;
   optional DataParameter data_param = 107;
   optional DropoutParameter dropout_param = 108;
   optional DummyDataParameter dummy_data_param = 109;
@@ -459,6 +460,11 @@ message ConvolutionParameter {
     CUDNN = 2;
   }
   optional Engine engine = 15 [default = DEFAULT];
+}
+
+message CropParameter {
+  optional uint32 crop = 1; // The cropped output's spatial size  (equal in Y, X)
+  // optional uint32 crop_w = 1; // The number of outputs for the layer
 }
 
 message DataParameter {
