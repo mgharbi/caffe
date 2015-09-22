@@ -17,4 +17,7 @@
 #include "caffe/util/io.hpp"
 #include "caffe/vision_layers.hpp"
 
+// MGH
+#include "caffe/mgh_layers.hpp"
+
 #endif  // CAFFE_CAFFE_HPP_
