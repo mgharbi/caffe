@@ -76,6 +76,16 @@ void RGB2XYZLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
 
+    // Loss L
+    // y = f(x)
+
+
+
+    // Backpropagation:
+    //    - compute dL/dx as a function of dL/dy
+    //    - chain rule dL/dx = dL/dy* dy/dx
+    //    - top_diff is dL/dy
+
     vector<int> shape = bottom[0]->shape();
     for (int n = 0; n < shape[0]; ++n) 
     for (int y = 0; y < shape[2]; ++y) 
@@ -85,29 +95,37 @@ void RGB2XYZLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         Dtype dy = top_diff[top[0]->offset(n,1,y,x)];
         Dtype dz = top_diff[top[0]->offset(n,2,y,x)];
 
-        Dtype dr = 0.412453*dx + 0.212671*dy +  0.019334*dz;
-        Dtype dg = 0.357580*dx + 0.715160*dy +  0.119193*dz;
-        Dtype db = 0.180423*dx + 0.072169*dy +  0.950227*dz;
+        Dtype drp = 0.412453*dx + 0.212671*dy +  0.019334*dz;
+        Dtype dgp = 0.357580*dx + 0.715160*dy +  0.119193*dz;
+        Dtype dbp = 0.180423*dx + 0.072169*dy +  0.950227*dz;
 
         Dtype r = bottom_data[bottom[0]->offset(n,0,y,x)];
         Dtype g = bottom_data[bottom[0]->offset(n,1,y,x)];
         Dtype b = bottom_data[bottom[0]->offset(n,2,y,x)];
 
-        if ( dr > 0.04045 ) {
+        Dtype dr = Dtype(0);
+        Dtype dg = Dtype(0);
+        Dtype db = Dtype(0);
+
+        if ( r > 0.04045 ) {
             dr = 2.4/1.055*pow(( r + 0.055 ) / 1.055 , 1.4);
         } else {
             dr = 1.0 / 12.92;
         }  
-        if ( dg > 0.04045 ) {
+        if ( g > 0.04045 ) {
             dg = 2.4/1.055*pow(( g + 0.055 ) / 1.055 , 1.4);
         } else {
             dg = 1.0 / 12.92;
         }  
-        if ( db > 0.04045 ) {
+        if ( b > 0.04045 ) {
             db = 2.4/1.055*pow(( b + 0.055 ) / 1.055 , 1.4);
         } else {
             db = 1.0 / 12.92;
         }  
+
+        dr *= drp;
+        dg *= dgp;
+        db *= dbp;
 
         bottom_diff[top[0]->offset(n,0,y,x)] = dr;
         bottom_diff[top[0]->offset(n,1,y,x)] = dg;
