@@ -105,7 +105,7 @@ void XYZ2LABLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
         Dtype Xp = X / X_ref;
         Dtype Yp = Y / Y_ref;
-        Dtype Zp = X / Z_ref;
+        Dtype Zp = Z / Z_ref;
 
         Dtype dX_p = Dtype(0);
         Dtype dY_p = Dtype(0);
