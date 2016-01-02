@@ -72,14 +72,12 @@ void RGB2XYZLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
 
     const Dtype* top_diff = top[0]->cpu_diff();
-    const Dtype* bottom_data = top[0]->mutable_cpu_data();
+    const Dtype* bottom_data = bottom[0]->cpu_data();
 
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
 
     // Loss L
     // y = f(x)
-
-
 
     // Backpropagation:
     //    - compute dL/dx as a function of dL/dy
@@ -123,13 +121,9 @@ void RGB2XYZLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
             db = 1.0 / 12.92;
         }  
 
-        dr *= drp;
-        dg *= dgp;
-        db *= dbp;
-
-        bottom_diff[top[0]->offset(n,0,y,x)] = dr;
-        bottom_diff[top[0]->offset(n,1,y,x)] = dg;
-        bottom_diff[top[0]->offset(n,2,y,x)] = db;
+        bottom_diff[bottom[0]->offset(n,0,y,x)] = dr*drp;
+        bottom_diff[bottom[0]->offset(n,1,y,x)] = dg*dgp;
+        bottom_diff[bottom[0]->offset(n,2,y,x)] = db*dbp;
     }
 }
 

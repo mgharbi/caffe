@@ -197,7 +197,8 @@ class XYZ2LABLayer : public Layer<Dtype> {
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
-  float X_ref, Y_ref, Z_ref;
+  double X_ref, Y_ref, Z_ref;
+  double i_X_ref, i_Y_ref, i_Z_ref;
 
 };
 
