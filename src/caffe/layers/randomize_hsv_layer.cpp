@@ -49,10 +49,10 @@ void RandomizeHSVLayer<Dtype>::Forward_cpu(
 
 
     // Process only during training
-    // if (this->phase_ != TRAIN) {
-    //     caffe_copy(count, bottom_data, top_data);
-    //     return;
-    // }
+    if (this->phase_ != TRAIN) {
+        caffe_copy(count, bottom_data, top_data);
+        return;
+    }
     vector<int> shape = bottom[0]->shape();
     for (int n = 0; n < shape[0]; ++n) {
         Dtype rand_h;
