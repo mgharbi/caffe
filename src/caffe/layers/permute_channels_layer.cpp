@@ -49,6 +49,10 @@ void PermuteChannelsLayer<Dtype>::Forward_cpu(
 
     // Process only during training
     int permute = Rand(2);
+    // Process only during training
+    if (this->phase_ != TRAIN) {
+        permute = 0;
+    }
     if(permute == 0) { // flip a coin and permute channel
         vector<int> chans(3);
         chans[0] = 0;
