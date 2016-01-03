@@ -96,6 +96,8 @@ class MosaicLayer : public Layer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
       NOT_IMPLEMENTED;
   }
+
+  bool store_pattern_;
 };
 
 template <typename Dtype>

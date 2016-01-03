@@ -15,13 +15,19 @@ void MosaicLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK_EQ(bottom[0]->shape()[1], 3) << "Input to mosaic layer should have 3 channels" ;
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
     "allow in-place computation.";
+
+  store_pattern_ = this->layer_param_.mosaic_param().store_pattern();
 }
 
 template <typename Dtype>
 void MosaicLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   vector<int> shape = bottom[0]->shape();
-  shape[1] = 1;
+  if(store_pattern_) {
+      shape[1] = 5;
+  } else {
+      shape[1] = 1;
+  }
   top[0]->Reshape(shape);
 }
 
@@ -43,16 +49,28 @@ void MosaicLayer<Dtype>::Forward_cpu(
     for (int x = 0; x < shape[3]; ++x) 
     {
         if(y % 2 == 0) {
-            if ( x % 2 == 0) {
+            if ( x % 2 == 0) { // G
                 top_data[top[0]->offset(n,0,y,x)] = bottom_data[bottom[0]->offset(n,1,y,x)];
-            } else {
+                if(store_pattern_){
+                    top_data[top[0]->offset(n,2,y,x)] = 1;
+                }
+            } else { // R
                 top_data[top[0]->offset(n,0,y,x)] = bottom_data[bottom[0]->offset(n,0,y,x)];
+                if(store_pattern_){
+                    top_data[top[0]->offset(n,1,y,x)] = 1;
+                }
             }
         } else {
-            if ( x % 2 == 0) {
+            if ( x % 2 == 0) { // B
                 top_data[top[0]->offset(n,0,y,x)] = bottom_data[bottom[0]->offset(n,2,y,x)];
-            } else {
+                if(store_pattern_){
+                    top_data[top[0]->offset(n,3,y,x)] = 1;
+                }
+            } else { // G
                 top_data[top[0]->offset(n,0,y,x)] = bottom_data[bottom[0]->offset(n,1,y,x)];
+                if(store_pattern_){
+                    top_data[top[0]->offset(n,2,y,x)] = 1;
+                }
             }
         }
     }
