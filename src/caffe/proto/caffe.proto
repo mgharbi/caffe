@@ -394,6 +394,7 @@ message LayerParameter {
 
   // MIKA
   optional OffsetCropParameter offset_crop_param = 139;
+  optional MosaicParameter mosaic_param = 140;
 }
 
 // Message that stores parameters used to apply transformation
@@ -1242,6 +1243,10 @@ message PReLUParameter {
 
 message OffsetCropParameter {
     required uint32 index = 1;
+}
+
+message MosaicParameter {
+    required bool store_pattern = 1 [default = false];
 }
 
 // -------------------------------------------------------------------
