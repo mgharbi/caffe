@@ -24,7 +24,7 @@ void MosaicLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   vector<int> shape = bottom[0]->shape();
   if(store_pattern_) {
-      shape[1] = 5;
+      shape[1] = 4;
   } else {
       shape[1] = 1;
   }
