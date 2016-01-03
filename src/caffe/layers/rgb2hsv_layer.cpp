@@ -37,18 +37,18 @@ void RGB2HSVLayer<Dtype>::Forward_cpu(
     for (int y = 0; y < shape[2]; ++y) 
     for (int x = 0; x < shape[3]; ++x) 
     {
-        Dtype r = bottom_data[bottom[0]->offset(n,0,y,x)];
-        Dtype g = bottom_data[bottom[0]->offset(n,1,y,x)];
-        Dtype b = bottom_data[bottom[0]->offset(n,2,y,x)];
+        double r = bottom_data[bottom[0]->offset(n,0,y,x)];
+        double g = bottom_data[bottom[0]->offset(n,1,y,x)];
+        double b = bottom_data[bottom[0]->offset(n,2,y,x)];
 
-        Dtype maxi = std::max(r,std::max(g,b));
-        Dtype mini = std::min(r,std::min(g,b));
+        double maxi = std::max(r,std::max(g,b));
+        double mini = std::min(r,std::min(g,b));
 
-        Dtype delta = maxi-mini;
+        double delta = maxi-mini;
 
-        Dtype h = 0;
-        Dtype v = 0; 
-        Dtype s = 0; 
+        double h = 0;
+        double v = 0; 
+        double s = 0; 
 
         // Value
         v = maxi;
@@ -66,43 +66,17 @@ void RGB2HSVLayer<Dtype>::Forward_cpu(
         }else {
             if(maxi == r) {
                 h = (g-b)/delta;
-            }
-            if(maxi == g) {
+            }else if(maxi == g) {
                 h = 2.0 + (b-r)/delta;
-            }
-            if(maxi == b) {
+            }else if(maxi == b) {
                 h = 4.0 + (r-g)/delta;
             }
-            h = std::fmod((h/6.0),1.0);
+            h = std::fmod((h+6)/6.0,1.0);
         }
 
         top_data[top[0]->offset(n,0,y,x)] = h;
         top_data[top[0]->offset(n,1,y,x)] = s;
         top_data[top[0]->offset(n,2,y,x)] = v;
-    }
-}
-
-template <typename Dtype>
-void RGB2HSVLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-
-    const Dtype* top_diff = top[0]->cpu_diff();
-    const Dtype* bottom_data = bottom[0]->cpu_data();
-
-    Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
-
-    vector<int> shape = bottom[0]->shape();
-    for (int n = 0; n < shape[0]; ++n) 
-    for (int y = 0; y < shape[2]; ++y) 
-    for (int x = 0; x < shape[3]; ++x) 
-    {
-        Dtype dh = top_diff[top[0]->offset(n,0,y,x)];
-        Dtype ds = top_diff[top[0]->offset(n,1,y,x)];
-        Dtype dv = top_diff[top[0]->offset(n,2,y,x)];
-
-        bottom_diff[bottom[0]->offset(n,0,y,x)] = 0;
-        bottom_diff[bottom[0]->offset(n,1,y,x)] = 0;
-        bottom_diff[bottom[0]->offset(n,2,y,x)] = 0;
     }
 }
 

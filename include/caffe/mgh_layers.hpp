@@ -152,6 +152,32 @@ class PermuteChannelsLayer : public Layer<Dtype> {
 };
 
 template <typename Dtype>
+class RandomizeHSVLayer : public Layer<Dtype> {
+ public:
+  explicit RandomizeHSVLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "RandomizeHSV"; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+      NOT_IMPLEMENTED;
+  }
+  int Rand(int n);
+
+  shared_ptr<Caffe::RNG> rng_;
+};
+
+template <typename Dtype>
 class RGB2HSVLayer : public Layer<Dtype> {
  public:
   explicit RGB2HSVLayer(const LayerParameter& param)
@@ -171,7 +197,37 @@ class RGB2HSVLayer : public Layer<Dtype> {
   // virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   //     const vector<Blob<Dtype>*>& top);
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+      NOT_IMPLEMENTED;
+  }
+  // virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+  //     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+};
+
+template <typename Dtype>
+class HSV2RGBLayer : public Layer<Dtype> {
+ public:
+  explicit HSV2RGBLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "HSV2RGB"; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  // virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+  //     const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+      NOT_IMPLEMENTED;
+  }
   // virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
   //     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
