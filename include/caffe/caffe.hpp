@@ -17,7 +17,6 @@
 #include "caffe/util/benchmark.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/util/upgrade_proto.hpp"
-#include "caffe/vision_layers.hpp"
 
 // MGH
 #include "caffe/mgh_layers.hpp"
