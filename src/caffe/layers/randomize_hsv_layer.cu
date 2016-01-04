@@ -45,7 +45,6 @@ void RandomizeHSVLayer<Dtype>::Forward_gpu(
     // Process only during training
     float randomize;
     caffe_rng_uniform<float>(1, 0.0, 1.0, &randomize);
-    LOG(INFO) << "GPU random " << randomized_ratio_;
     if (randomize < randomized_ratio_ || this->phase_ != TRAIN) {
         caffe_copy(count, bottom_data, top_data);
         return;
