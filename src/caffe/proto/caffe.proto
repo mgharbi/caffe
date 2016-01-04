@@ -396,6 +396,7 @@ message LayerParameter {
   optional OffsetCropParameter offset_crop_param = 200;
   optional MosaicParameter mosaic_param = 201;
   optional MGHPreprocessorParameter mgh_preprocessor_param = 202;
+  optional AddNoiseParameter add_noise_param = 203;
 }
 
 // Message that stores parameters used to apply transformation
@@ -1273,6 +1274,10 @@ message MosaicParameter {
 }
 message MGHPreprocessorParameter {
     required float randomized_ratio = 1 [default = 0.5];
+}
+
+message AddNoiseParameter {
+    repeated float noise_level = 1 ;
 }
 
 // -------------------------------------------------------------------
