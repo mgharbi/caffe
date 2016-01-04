@@ -41,8 +41,8 @@ void RGB2HSVLayer<Dtype>::Forward_cpu(
         Dtype g = bottom_data[bottom[0]->offset(n,1,y,x)];
         Dtype b = bottom_data[bottom[0]->offset(n,2,y,x)];
 
-        Dtype maxi = std::fmax(r,std::fmax(g,b));
-        Dtype mini = std::fmin(r,std::fmin(g,b));
+        Dtype maxi = fmax(r,fmax(g,b));
+        Dtype mini = fmin(r,fmin(g,b));
         Dtype delta = maxi-mini;
 
         Dtype h = 0;
@@ -70,7 +70,7 @@ void RGB2HSVLayer<Dtype>::Forward_cpu(
             }else if(maxi == b) {
                 h = 4.0 + (r-g)/delta;
             }
-            h = std::fmod((h+6)/6.0,1.0);
+            h = fmod((h+6)/6.0,1.0);
         }
 
         top_data[top[0]->offset(n,0,y,x)] = h;
