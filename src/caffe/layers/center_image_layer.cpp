@@ -31,15 +31,10 @@ void CenterImageLayer<Dtype>::Forward_cpu(
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* top_data = top[0]->mutable_cpu_data();
 
-    vector<int> shape = bottom[0]->shape();
-    for (int n = 0; n < shape[0]; ++n) 
-    for (int z = 0; z < shape[1]; ++z) 
-    for (int y = 0; y < shape[2]; ++y) 
-    for (int x = 0; x < shape[3]; ++x) 
-    {
-        Dtype val = bottom_data[bottom[0]->offset(n,z,y,x)];
-        top_data[top[0]->offset(n,z,y,x)] = val - 0.5;
-    }
+    int count = bottom[0]->count();
+
+    caffe_copy(count, bottom_data, top_data);
+    caffe_add_scalar(count, Dtype(-0.5), top_data);
 }
 
 template <typename Dtype>
@@ -49,15 +44,8 @@ void CenterImageLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const Dtype* top_diff = top[0]->cpu_diff();
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
 
-    vector<int> shape = bottom[0]->shape();
-    for (int n = 0; n < shape[0]; ++n) 
-    for (int z = 0; z < shape[1]; ++z) 
-    for (int y = 0; y < shape[2]; ++y) 
-    for (int x = 0; x < shape[3]; ++x) 
-    {
-        Dtype val = top_diff[top[0]->offset(n,z,y,x)];
-        bottom_diff[top[0]->offset(n,z,y,x)] = val;
-    }
+    int count = bottom[0]->count();
+    caffe_copy(count, top_diff, bottom_diff);
 }
 
 #ifdef CPU_ONLY

@@ -41,7 +41,6 @@ void HSV2RGBLayer<Dtype>::Forward_cpu(
         Dtype s = bottom_data[bottom[0]->offset(n,1,y,x)];
         Dtype v = bottom_data[bottom[0]->offset(n,2,y,x)];
 
-
         int hi = std::floor(h*6);
         Dtype f = h*6-hi;
         Dtype p = v*(1-s);

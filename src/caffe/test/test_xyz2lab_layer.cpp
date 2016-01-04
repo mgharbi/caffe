@@ -58,7 +58,7 @@ TYPED_TEST(XYZ2LABLayerTest, TestGradient) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
   XYZ2LABLayer<Dtype> layer(layer_param);
-  GradientChecker<Dtype> checker(1e-4, 1e-3);
+  GradientChecker<Dtype> checker(1e-4, 1e-2);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
 }

@@ -43,9 +43,9 @@ void XYZ2LABLayer<Dtype>::Forward_cpu(
     for (int x = 0; x < shape[3]; ++x) 
     {
 
-        double X = bottom_data[bottom[0]->offset(n,0,y,x)];
-        double Y = bottom_data[bottom[0]->offset(n,1,y,x)];
-        double Z = bottom_data[bottom[0]->offset(n,2,y,x)];
+        Dtype X = bottom_data[bottom[0]->offset(n,0,y,x)];
+        Dtype Y = bottom_data[bottom[0]->offset(n,1,y,x)];
+        Dtype Z = bottom_data[bottom[0]->offset(n,2,y,x)];
 
         X  = X/X_ref;
         Y  = Y/Y_ref;
@@ -67,9 +67,9 @@ void XYZ2LABLayer<Dtype>::Forward_cpu(
             Z = ( 7.787 * Z ) + ( 16.0 / 116.0 );
         }   
 
-        double L = 116.0*Y - 16.0;
-        double a = 500.0*(X-Y);
-        double b = 200.0*(Y-Z);
+        Dtype L = 116.0*Y - 16.0;
+        Dtype a = 500.0*(X-Y);
+        Dtype b = 200.0*(Y-Z);
 
         top_data[top[0]->offset(n,0,y,x)] = L;
         top_data[top[0]->offset(n,1,y,x)] = a;
@@ -91,25 +91,25 @@ void XYZ2LABLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     for (int y = 0; y < shape[2]; ++y) 
     for (int x = 0; x < shape[3]; ++x) 
     {
-        double dL = top_diff[top[0]->offset(n,0,y,x)];
-        double da = top_diff[top[0]->offset(n,1,y,x)];
-        double db = top_diff[top[0]->offset(n,2,y,x)];
+        Dtype dL = top_diff[top[0]->offset(n,0,y,x)];
+        Dtype da = top_diff[top[0]->offset(n,1,y,x)];
+        Dtype db = top_diff[top[0]->offset(n,2,y,x)];
 
-        double dX_pp =            500.0*da           ;
-        double dY_pp = 116.0*dL - 500.0*da + 200.0*db;
-        double dZ_pp =                     - 200.0*db;
+        Dtype dX_pp =            500.0*da           ;
+        Dtype dY_pp = 116.0*dL - 500.0*da + 200.0*db;
+        Dtype dZ_pp =                     - 200.0*db;
 
-        double X = bottom_data[bottom[0]->offset(n,0,y,x)];
-        double Y = bottom_data[bottom[0]->offset(n,1,y,x)];
-        double Z = bottom_data[bottom[0]->offset(n,2,y,x)];
+        Dtype X = bottom_data[bottom[0]->offset(n,0,y,x)];
+        Dtype Y = bottom_data[bottom[0]->offset(n,1,y,x)];
+        Dtype Z = bottom_data[bottom[0]->offset(n,2,y,x)];
 
-        double Xp = X / X_ref;
-        double Yp = Y / Y_ref;
-        double Zp = Z / Z_ref;
+        Dtype Xp = X / X_ref;
+        Dtype Yp = Y / Y_ref;
+        Dtype Zp = Z / Z_ref;
 
-        double dX_p = 0;
-        double dY_p = 0;
-        double dZ_p = 0;
+        Dtype dX_p = 0;
+        Dtype dY_p = 0;
+        Dtype dZ_p = 0;
 
         if ( Xp > 0.008856 ){
             dX_p = 1.0/3.0 * pow(Xp,  -2.0/3.0 );
