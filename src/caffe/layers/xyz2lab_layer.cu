@@ -115,7 +115,6 @@ void XYZ2LABLayer<Dtype>::Forward_gpu(
     const Dtype* bottom_data = bottom[0]->gpu_data();
     Dtype* top_data = top[0]->mutable_gpu_data();
 
-    LOG(INFO) << "xyz2lab gpu fwd";
     vector<int> shape = bottom[0]->shape();
     int npix = shape[0]*shape[2]*shape[3];
     XYZ2LABForward<Dtype><<<CAFFE_GET_BLOCKS(npix), CAFFE_CUDA_NUM_THREADS>>>(
@@ -133,8 +132,6 @@ void XYZ2LABLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     const Dtype* top_diff    = top[0]->cpu_diff();
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* bottom_diff       = bottom[0]->mutable_cpu_diff();
-
-    LOG(INFO) << "xyz2lab gpu bwd";
 
     vector<int> shape = bottom[0]->shape();
     int npix = shape[0]*shape[2]*shape[3];
