@@ -19,18 +19,9 @@ void RandomizeHSVLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
     "allow in-place computation.";
 
-    const unsigned int rng_seed = caffe_rng_rand();
-    rng_.reset(new Caffe::RNG(rng_seed));
+  randomized_ratio_ = this->layer_param_.mgh_preprocessor_param().randomized_ratio();
 }
 
-template <typename Dtype>
-int RandomizeHSVLayer<Dtype>::Rand(int n) {
-  CHECK(rng_);
-  CHECK_GT(n, 0);
-  caffe::rng_t* rng =
-      static_cast<caffe::rng_t*>(rng_->generator());
-  return ((*rng)() % n);
-}
 
 template <typename Dtype>
 void RandomizeHSVLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
@@ -48,19 +39,21 @@ void RandomizeHSVLayer<Dtype>::Forward_cpu(
     const int count = top[0]->count();
 
 
-    // Process only during training
-    if (this->phase_ != TRAIN) {
+    // Process only during training, with 50% chance
+    float randomize;
+    caffe_rng_uniform<float>(1, 0.0, 1.0, &randomize);
+    if (randomize < randomized_ratio_ || this->phase_ != TRAIN) {
         caffe_copy(count, bottom_data, top_data);
         return;
     }
     vector<int> shape = bottom[0]->shape();
+    Dtype rand_h;
+    Dtype rand_s;
+    Dtype rand_v;
+    caffe_rng_uniform<Dtype>(1, 0.0, 1.0, &rand_h);
+    caffe_rng_uniform<Dtype>(1, -0.3, 0.3, &rand_s);
+    caffe_rng_uniform<Dtype>(1, -0.3, 0.3, &rand_v);
     for (int n = 0; n < shape[0]; ++n) {
-        Dtype rand_h;
-        Dtype rand_s;
-        Dtype rand_v;
-        caffe_rng_uniform<Dtype>(1, 0.0, 1.0, &rand_h);
-        caffe_rng_uniform<Dtype>(1, -0.3, 0.3, &rand_s);
-        caffe_rng_uniform<Dtype>(1, -0.3, 0.3, &rand_v);
 
         for (int y = 0; y < shape[2]; ++y) 
         for (int x = 0; x < shape[3]; ++x) 
@@ -72,8 +65,6 @@ void RandomizeHSVLayer<Dtype>::Forward_cpu(
             top_data[top[0]->offset(n,0,y,x)] = std::fmod(h+rand_h+1.0,Dtype(1.0));
             top_data[top[0]->offset(n,1,y,x)] = std::min(std::max(s+rand_s,Dtype(0.0)), Dtype(1.0));
             top_data[top[0]->offset(n,2,y,x)] = std::min(std::max(v+rand_v,Dtype(0.0)), Dtype(1.0));
-            // top_data[top[0]->offset(n,1,y,x)] = s;
-            // top_data[top[0]->offset(n,2,y,x)] = v;
         }
     }
 

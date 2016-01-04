@@ -15,11 +15,11 @@ void KillChannelLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
 
   CHECK_EQ(bottom[0]->shape()[1], 3) << "Input to kill_channel layer should have 3 channels" ;
-  CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
-    "allow in-place computation.";
 
     const unsigned int rng_seed = caffe_rng_rand();
     rng_.reset(new Caffe::RNG(rng_seed));
+
+    randomized_ratio_ = this->layer_param_.mgh_preprocessor_param().randomized_ratio();
 }
 
 template <typename Dtype>
@@ -47,22 +47,26 @@ void KillChannelLayer<Dtype>::Forward_cpu(
     const int count = top[0]->count();
 
     // Copy data over
-    caffe_copy(count, bottom_data, top_data);
+    if(top[0] != bottom[0]) {
+        caffe_copy(count, bottom_data, top_data);
+    }
 
     // Process only during training
     if (this->phase_ != TRAIN) {
         return;
     }
 
-    int killChan = Rand(2);
-    if(killChan == 0) { // flip a coin and kill a channel
-        int chanToKill = Rand(4);
+    float randomize;
+    caffe_rng_uniform<float>(1, 0.0, 1.0, &randomize);
+    if(randomize < randomized_ratio_) { // flip a coin and permute channel
+        int chanToKill = Rand(3);
         vector<int> shape = bottom[0]->shape();
+
+        int npix = shape[3]*shape[2];
+
         for (int n = 0; n < shape[0]; ++n) 
-        for (int y = 0; y < shape[2]; ++y) 
-        for (int x = 0; x < shape[3]; ++x) 
         {
-            top_data[top[0]->offset(n,chanToKill,y,x)] = Dtype(0);
+            caffe_set(npix,Dtype(0),top_data+top[0]->offset(n,chanToKill,0,0));
         }
     }
 

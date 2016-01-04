@@ -92,7 +92,13 @@ class MosaicLayer : public Layer<Dtype> {
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+      NOT_IMPLEMENTED;
+  }
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
       NOT_IMPLEMENTED;
   }
@@ -121,9 +127,15 @@ class KillChannelLayer : public Layer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
       NOT_IMPLEMENTED;
   }
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+      NOT_IMPLEMENTED;
+  }
 
+  float randomized_ratio_;
   int Rand(int n);
-
   shared_ptr<Caffe::RNG> rng_;
 };
 
@@ -148,8 +160,15 @@ class PermuteChannelsLayer : public Layer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
       NOT_IMPLEMENTED;
   }
-  int Rand(int n);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+      NOT_IMPLEMENTED;
+  }
 
+  float randomized_ratio_;
+  int Rand(int n);
   shared_ptr<Caffe::RNG> rng_;
 };
 
@@ -174,9 +193,15 @@ class RandomizeHSVLayer : public Layer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
       NOT_IMPLEMENTED;
   }
-  int Rand(int n);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+      NOT_IMPLEMENTED;
+  }
 
-  shared_ptr<Caffe::RNG> rng_;
+  float randomized_ratio_;
+
 };
 
 template <typename Dtype>
@@ -196,14 +221,16 @@ class RGB2HSVLayer : public Layer<Dtype> {
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
-  // virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-  //     const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
       NOT_IMPLEMENTED;
   }
-  // virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-  //     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) { 
+      NOT_IMPLEMENTED;
+  }
 
 };
 
@@ -231,7 +258,9 @@ class HSV2RGBLayer : public Layer<Dtype> {
       NOT_IMPLEMENTED;
   }
   // virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-  //     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  //     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+  //     NOT_IMPLEMENTED;
+  // }
 
 };
 

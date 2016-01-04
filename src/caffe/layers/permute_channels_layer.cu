@@ -10,42 +10,13 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void PermuteChannelsLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-
-  CHECK_EQ(bottom[0]->shape()[1], 3) << "Input to permute_channels layer should have 3 channels" ;
-  CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
-    "allow in-place computation.";
-
-    const unsigned int rng_seed = caffe_rng_rand();
-    rng_.reset(new Caffe::RNG(rng_seed));
-
-    randomized_ratio_ = this->layer_param_.mgh_preprocessor_param().randomized_ratio();
-}
 
 template <typename Dtype>
-int PermuteChannelsLayer<Dtype>::Rand(int n) {
-  CHECK(rng_);
-  CHECK_GT(n, 0);
-  caffe::rng_t* rng =
-      static_cast<caffe::rng_t*>(rng_->generator());
-  return ((*rng)() % n);
-}
-
-template <typename Dtype>
-void PermuteChannelsLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-  vector<int> shape = bottom[0]->shape();
-  top[0]->Reshape(shape);
-}
-
-template <typename Dtype>
-void PermuteChannelsLayer<Dtype>::Forward_cpu(
+void PermuteChannelsLayer<Dtype>::Forward_gpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
 
-    const Dtype* bottom_data = bottom[0]->cpu_data();
-    Dtype* top_data = top[0]->mutable_cpu_data();
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* top_data = top[0]->mutable_gpu_data();
     const int count = top[0]->count();
 
 
@@ -75,11 +46,6 @@ void PermuteChannelsLayer<Dtype>::Forward_cpu(
 
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(PermuteChannelsLayer);
-#endif
-
-INSTANTIATE_CLASS(PermuteChannelsLayer);
-REGISTER_LAYER_CLASS(PermuteChannels);
+INSTANTIATE_LAYER_GPU_FUNCS(PermuteChannelsLayer);
 
 }  // namespace caffe

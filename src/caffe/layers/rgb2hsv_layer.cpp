@@ -37,18 +37,17 @@ void RGB2HSVLayer<Dtype>::Forward_cpu(
     for (int y = 0; y < shape[2]; ++y) 
     for (int x = 0; x < shape[3]; ++x) 
     {
-        double r = bottom_data[bottom[0]->offset(n,0,y,x)];
-        double g = bottom_data[bottom[0]->offset(n,1,y,x)];
-        double b = bottom_data[bottom[0]->offset(n,2,y,x)];
+        Dtype r = bottom_data[bottom[0]->offset(n,0,y,x)];
+        Dtype g = bottom_data[bottom[0]->offset(n,1,y,x)];
+        Dtype b = bottom_data[bottom[0]->offset(n,2,y,x)];
 
-        double maxi = std::max(r,std::max(g,b));
-        double mini = std::min(r,std::min(g,b));
+        Dtype maxi = std::fmax(r,std::fmax(g,b));
+        Dtype mini = std::fmin(r,std::fmin(g,b));
+        Dtype delta = maxi-mini;
 
-        double delta = maxi-mini;
-
-        double h = 0;
-        double v = 0; 
-        double s = 0; 
+        Dtype h = 0;
+        Dtype v = 0; 
+        Dtype s = 0; 
 
         // Value
         v = maxi;
