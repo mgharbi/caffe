@@ -24,17 +24,17 @@ __global__ void RGB2XYZForward(const int n, const Dtype* in, Dtype* out,
         Dtype b = in[src_idx + 2*chan_stride];
 
         if ( r > 0.04045 ) {
-            r = pow(( r + 0.055 ) / 1.055 , 2.4);
+            r = pow(Dtype(( r + 0.055 ) / 1.055) , Dtype(2.4));
         } else {
             r = r / 12.92;
         }  
         if ( g > 0.04045 ) {
-            g = pow(( g + 0.055 ) / 1.055 , 2.4);
+            g = pow(Dtype(( g + 0.055 ) / 1.055) , Dtype(2.4));
         } else {
             g = g / 12.92;
         }  
         if ( b > 0.04045 ) {
-            b = pow(( b + 0.055 ) / 1.055 , 2.4);
+            b = pow(Dtype(( b + 0.055 ) / 1.055) , Dtype(2.4));
         } else {
             b = b / 12.92;
         }  

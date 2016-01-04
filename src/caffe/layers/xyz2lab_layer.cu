@@ -29,17 +29,17 @@ __global__ void XYZ2LABForward(const int n, const Dtype* in, Dtype* out,
         Z  = Z/Z_ref;
 
         if ( X > 0.008856 ){
-            X = pow(X,  1.0/3.0 );
+            X = pow(Dtype(X),  Dtype(1.0/3.0) );
         } else {
             X = ( 7.787 * X ) + ( 16.0 / 116.0 );
         }   
         if ( Y > 0.008856 ){
-            Y = pow(Y,  1.0/3.0 );
+            Y = pow(Dtype(Y),  Dtype(1.0/3.0) );
         } else {
             Y = ( 7.787 * Y ) + ( 16.0 / 116.0 );
         }   
         if ( Z > 0.008856 ){
-            Z = pow(Z,  1.0/3.0 );
+            Z = pow(Dtype(Z),  Dtype(1.0/3.0) );
         } else {
             Z = ( 7.787 * Z ) + ( 16.0 / 116.0 );
         }   
@@ -87,17 +87,17 @@ __global__ void XYZ2LABBackward(const int n, const Dtype* top_diff, Dtype* botto
         Dtype dZ_p = 0;
 
         if ( Xp > 0.008856 ){
-            dX_p = 1.0/3.0 * pow(Xp,  -2.0/3.0 );
+            dX_p = 1.0/3.0 * pow(Dtype(Xp),  Dtype(-2.0/3.0) );
         } else {
             dX_p = 7.787;
         }   
         if ( Yp > 0.008856 ){
-            dY_p = 1.0/3.0 * pow(Yp,  -2.0/3.0 );
+            dY_p = 1.0/3.0 * pow(Dtype(Yp),  Dtype(-2.0/3.0) );
         } else {
             dY_p = 7.787;
         }   
         if ( Zp > 0.008856 ){
-            dZ_p = 1.0/3.0 * pow(Zp,  -2.0/3.0 );
+            dZ_p = 1.0/3.0 * pow(Dtype(Zp),  Dtype(-2.0/3.0) );
         } else {
             dZ_p = 7.787;
         }   
