@@ -3,7 +3,7 @@
 
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/mgh_layers.hpp"
+#include "caffe/mgh_layers/center_image_layer.hpp"
 
 namespace caffe {
 

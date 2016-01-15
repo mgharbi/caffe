@@ -4,7 +4,7 @@
 
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/mgh_layers.hpp"
+#include "caffe/mgh_layers/permute_channels_layer.hpp"
 #include "caffe/util/rng.hpp"
 #include "caffe/util/io.hpp"
 

@@ -5,7 +5,7 @@
 
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/mgh_layers.hpp"
+#include "caffe/mgh_layers/randomize_hsv_layer.hpp"
 #include "caffe/util/rng.hpp"
 #include "caffe/util/io.hpp"
 
@@ -14,7 +14,7 @@ namespace caffe {
 template <typename Dtype>
 __global__ void RandomizeHSVForward(const int n, const Dtype* in, Dtype* out,
     Dtype rand_h, Dtype rand_s, Dtype rand_v,
-    int height, int width, int chans)
+    int chans, int height, int width)
 {
     CUDA_KERNEL_LOOP(index, n) {
         int blob_idx = index / (height*width);
@@ -62,7 +62,7 @@ void RandomizeHSVLayer<Dtype>::Forward_gpu(
     RandomizeHSVForward<Dtype><<<CAFFE_GET_BLOCKS(npix), CAFFE_CUDA_NUM_THREADS>>>(
             npix, bottom_data, top_data, 
             rand_h, rand_s, rand_v,
-            shape[3], shape[2],shape[1]);
+            shape[1], shape[2],shape[3]);
     CUDA_POST_KERNEL_CHECK;
 }
 

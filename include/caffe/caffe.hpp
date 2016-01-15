@@ -18,7 +18,5 @@
 #include "caffe/util/io.hpp"
 #include "caffe/util/upgrade_proto.hpp"
 
-// MGH
-#include "caffe/mgh_layers.hpp"
 
 #endif  // CAFFE_CAFFE_HPP_
