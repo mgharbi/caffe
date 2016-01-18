@@ -566,6 +566,52 @@ static void from_datum(MEX_ARGS) {
    output.set(1, (datum.has_label()) ? datum.label() : 0);  
 }
 
+// Usage: caffe_('to_datum', img, label)
+static void to_datum(MEX_ARGS) {
+    using namespace std;
+    mexplus::InputArguments input(nrhs, prhs, 2);
+    mexplus::OutputArguments output(nlhs, plhs, 1);
+    caffe::Datum datum;
+    mexplus::MxArray array(input.get(0));
+    datum.set_label(input.get<int>(1));
+    vector<mwSize> dimensions = array.dimensions();
+    int width = dimensions[1];
+    int height = dimensions[0];
+    int channels = 1;
+    for (int i = 2; i < dimensions.size(); ++i)
+        channels *= dimensions[i];
+    datum.set_channels(channels);
+    datum.set_width(width);
+    datum.set_height(height);
+    vector<mwIndex> subscripts(3);
+    if (array.isUint8()) {
+        datum.mutable_data()->reserve(array.size());
+        for (int k = channels - 1; k >= 0; --k) { // RGB to BGR order.
+            subscripts[2] = k;
+            for (int i = 0; i < height; ++i) {
+                subscripts[0] = i;
+                for (int j = 0; j < width; ++j) {
+                    subscripts[1] = j;
+                    datum.mutable_data()->push_back(array.at<uint8_t>(subscripts));
+                }
+            }
+        }
+    }
+    else {
+        datum.mutable_float_data()->Reserve(array.size());
+        for (int k = channels - 1; k >= 0; --k) { // RGB to BGR order.
+            subscripts[2] = k;
+            for (int i = 0; i < height; ++i) {
+                subscripts[0] = i;
+                for (int j = 0; j < width; ++j) {
+                    subscripts[1] = j;
+                    datum.add_float_data(array.at<float>(subscripts));
+                }
+            }
+        }
+    }
+    output.set(0, datum.SerializeAsString());
+}
 
 /** -----------------------------------------------------------------
  ** Available commands.
@@ -605,6 +651,7 @@ static handler_registry handlers[] = {
   { "reset",              reset           },
   { "read_mean",          read_mean       },
   { "from_datum",         from_datum      },
+  { "to_datum",           to_datum        },
   { "write_mean",         write_mean      },
   // The end.
   { "END",                NULL            },

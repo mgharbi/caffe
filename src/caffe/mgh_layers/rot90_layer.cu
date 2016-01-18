@@ -3,13 +3,13 @@
 
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/mgh_layers/flipLR_layer.hpp"
+#include "caffe/mgh_layers/rot90_layer.hpp"
 #include "caffe/util/rng.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
-__global__ void FlipLRForward(const int n, const Dtype* in, Dtype* out, const float * randomize,
+__global__ void Rot90Forward(const int n, const Dtype* in, Dtype* out, const float * randomize,
     int chans, int height, int width)
 {
     CUDA_KERNEL_LOOP(index, n) {
@@ -25,13 +25,13 @@ __global__ void FlipLRForward(const int n, const Dtype* in, Dtype* out, const fl
 
         // Flip only half of the images on average
         float f = randomize[0];
-        int src_idx = width-1-x + width*(y + height * (z + chans*blob_idx));
+        int src_idx = y + width*(z + height * (z + chans*blob_idx));
         out[dst_idx] = f > 0.5f ? in[dst_idx] : in[src_idx];
     }
 }
 
 template <typename Dtype>
-void FlipLRLayer<Dtype>::Forward_gpu(
+void Rot90Layer<Dtype>::Forward_gpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
 
     const Dtype* bottom_data = bottom[0]->gpu_data();
@@ -45,8 +45,9 @@ void FlipLRLayer<Dtype>::Forward_gpu(
     Blob<float> randomize(rand_shape);
     caffe_rng_uniform<float>(shape[0], 0.0, 1.0, randomize.mutable_cpu_data());
 
+
     int npix = shape[0]*shape[1]*shape[2]*shape[3];
-    FlipLRForward<Dtype><<<CAFFE_GET_BLOCKS(npix), CAFFE_CUDA_NUM_THREADS>>>(
+    Rot90Forward<Dtype><<<CAFFE_GET_BLOCKS(npix), CAFFE_CUDA_NUM_THREADS>>>(
             npix, bottom_data, top_data, randomize.gpu_data() ,
             shape[1], shape[2], shape[3]);
     CUDA_POST_KERNEL_CHECK;
@@ -54,6 +55,6 @@ void FlipLRLayer<Dtype>::Forward_gpu(
     // delete[] randomize;
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(FlipLRLayer);
+INSTANTIATE_LAYER_GPU_FUNCS(Rot90Layer);
 
 }  // namespace caffe
