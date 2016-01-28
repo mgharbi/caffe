@@ -1,52 +1,45 @@
-#ifndef ROT90_LAYER_HPP_O06VGLET
-#define ROT90_LAYER_HPP_O06VGLET
+#ifndef PSNR_LAYER_HPP_CR7LGMLK
+#define PSNR_LAYER_HPP_CR7LGMLK
 
-
-
-
-
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "caffe/blob.hpp"
-#include "caffe/common.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
 
 template <typename Dtype>
-class Rot90Layer : public Layer<Dtype> {
+class PSNRLayer : public Layer<Dtype> {
  public:
-  explicit Rot90Layer(const LayerParameter& param)
+  explicit PSNRLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "Rot90"; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual inline const char* type() const { return "PSNR"; }
+
   virtual inline int ExactNumBottomBlobs() const { return 1; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
 
  protected:
+  /// @copydoc PSNRLayer
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+  // virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+  //     const vector<Blob<Dtype>*>& top);
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
       NOT_IMPLEMENTED;
   }
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-      NOT_IMPLEMENTED;
-  }
-
+  // virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+  //     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 };
 
-} // caffe
+}  // namespace caffe
 
-#endif /* end of include guard: ROT90_LAYER_HPP_O06VGLET */
+#endif /* end of include guard: PSNR_LAYER_HPP_CR7LGMLK */
 

@@ -1,6 +1,5 @@
-#ifndef CENTER_IMAGE_LAYER_HPP_RKX6DW1Z
-#define CENTER_IMAGE_LAYER_HPP_RKX6DW1Z
-
+#ifndef FLIPLR_LAYER_HPP_MKLC82JY
+#define FLIPLR_LAYER_HPP_MKLC82JY
 
 
 #include <string>
@@ -46,5 +45,5 @@ class FlipLRLayer : public Layer<Dtype> {
 
 } // caffe
 
-#endif /* end of include guard: CENTER_IMAGE_LAYER_HPP_RKX6DW1Z */
+#endif /* end of include guard: FLIPLR_LAYER_HPP_MKLC82JYFLIPLR_LAYER_HPP_MKLC82JY */
 
