@@ -1,5 +1,7 @@
-#ifndef CENTER_IMAGE_LAYER_HPP_RKX6DW1Z
-#define CENTER_IMAGE_LAYER_HPP_RKX6DW1Z
+#ifndef ADD_SCALAR_LAYER_HPP_MSUIDWB6
+#define ADD_SCALAR_LAYER_HPP_MSUIDWB6
+
+
 
 
 
@@ -15,16 +17,16 @@
 namespace caffe {
 
 template <typename Dtype>
-class CenterImageLayer : public Layer<Dtype> {
+class AddScalarLayer : public Layer<Dtype> {
  public:
-  explicit CenterImageLayer(const LayerParameter& param)
+  explicit AddScalarLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "CenterImage"; }
+  virtual inline const char* type() const { return "AddScalar"; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
 
@@ -38,9 +40,10 @@ class CenterImageLayer : public Layer<Dtype> {
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
+  Dtype value_;
+
 };
 
 } // caffe
 
-#endif /* end of include guard: CENTER_IMAGE_LAYER_HPP_RKX6DW1Z */
-
+#endif /* end of include guard: ADD_SCALAR_LAYER_HPP_MSUIDWB6 */

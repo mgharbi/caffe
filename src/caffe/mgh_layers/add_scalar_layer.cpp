@@ -3,20 +3,19 @@
 
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/mgh_layers/center_image_layer.hpp"
+#include "caffe/mgh_layers/add_scalar_layer.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
-void CenterImageLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+void AddScalarLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
 
-  CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
-    "allow in-place computation.";
+  value_ = Dtype(this->layer_param_.add_scalar_param().value());
 }
 
 template <typename Dtype>
-void CenterImageLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+void AddScalarLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   for (int i = 1; i < bottom.size(); ++i) {
     CHECK(bottom[i]->shape() == bottom[0]->shape());
@@ -25,7 +24,7 @@ void CenterImageLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CenterImageLayer<Dtype>::Forward_cpu(
+void AddScalarLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
 
     const Dtype* bottom_data = bottom[0]->cpu_data();
@@ -33,26 +32,30 @@ void CenterImageLayer<Dtype>::Forward_cpu(
 
     int count = bottom[0]->count();
 
-    caffe_copy(count, bottom_data, top_data);
-    caffe_add_scalar(count, Dtype(-0.5), top_data);
+    if(top[0] != bottom[0]) {
+        caffe_copy(count, bottom_data, top_data);
+    }
+    caffe_add_scalar(count, value_, top_data);
 }
 
 template <typename Dtype>
-void CenterImageLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+void AddScalarLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
 
     const Dtype* top_diff = top[0]->cpu_diff();
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
 
     int count = bottom[0]->count();
-    caffe_copy(count, top_diff, bottom_diff);
+    if(top[0] != bottom[0]) {
+        caffe_copy(count, top_diff, bottom_diff);
+    }
 }
 
 #ifdef CPU_ONLY
-STUB_GPU(CenterImageLayer);
+STUB_GPU(AddScalarLayer);
 #endif
 
-INSTANTIATE_CLASS(CenterImageLayer);
-REGISTER_LAYER_CLASS(CenterImage);
+INSTANTIATE_CLASS(AddScalarLayer);
+REGISTER_LAYER_CLASS(AddScalar);
 
 }  // namespace caffe

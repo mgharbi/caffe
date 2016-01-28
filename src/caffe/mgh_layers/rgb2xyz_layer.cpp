@@ -40,6 +40,7 @@ void RGB2XYZLayer<Dtype>::Forward_cpu(
         Dtype g = bottom_data[bottom[0]->offset(n,1,y,x)];
         Dtype b = bottom_data[bottom[0]->offset(n,2,y,x)];
 
+        // inverse sRGB companding
         if ( r > 0.04045 ) {
             r = pow(( r + 0.055 ) / 1.055 , 2.4);
         } else {

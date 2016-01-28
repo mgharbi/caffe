@@ -398,6 +398,7 @@ message LayerParameter {
   optional MGHPreprocessorParameter mgh_preprocessor_param = 202;
   optional AddNoiseParameter add_noise_param = 203;
   optional SynthDataParameter synth_data_param = 204;
+  optional AddScalarParameter add_scalar_param = 205;
 }
 
 // Message that stores parameters used to apply transformation
@@ -1286,6 +1287,10 @@ message SynthDataParameter {
   // shape fields, and 0, 1 or N data_fillers.
   repeated BlobShape shape = 6;
 
+}
+
+message AddScalarParameter {
+    required float value = 1 ;
 }
 
 // -------------------------------------------------------------------
