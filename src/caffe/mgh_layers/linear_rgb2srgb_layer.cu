@@ -12,18 +12,15 @@ template <typename Dtype>
 __global__ void LinearRGB2SRGBForward(const int n, const Dtype* in, Dtype* out,
     int height, int width, int chans)
 {
-    const float t_ = 0.0031308;
-    const float a_ = 0.055;
-    const float b_ = 1+a_;
-    const float c_ = 1.0/2.4;
-    const float d_ = 12.92;
     CUDA_KERNEL_LOOP(index, n) {
         Dtype px = in[index];
-        if ( px > t_ ) {
-            px = b_*pow(px,c_) - a_;
+
+        if ( px > 0.0031308 ) {
+            px = 1.055*pow(px,Dtype(1.0/2.4)) - 0.055;
         } else {
-            px = px * d_;
+            px = px * 12.92;
         }  
+
         out[index] = px;
     }
 }
@@ -32,11 +29,6 @@ template <typename Dtype>
 __global__ void LinearRGB2SRGBBackward(const int n, const Dtype* top_diff, Dtype* bottom_diff, const Dtype* bottom_data,
     int height, int width, int chans)
 {
-    const float t_ = 0.0031308;
-    const float a_ = 0.055;
-    const float b_ = 1+a_;
-    const float c_ = 1.0/2.4;
-    const float d_ = 12.92;
     CUDA_KERNEL_LOOP(index, n) {
         Dtype dx = top_diff[index];
 
@@ -44,12 +36,11 @@ __global__ void LinearRGB2SRGBBackward(const int n, const Dtype* top_diff, Dtype
 
         Dtype dr = Dtype(0);
 
-        if ( px > t_ ) {
-            dr = b_*c_/pow(px,1-c_) ;
+        if ( px > 0.0031308 ) {
+            dr = 1.055*(1.0/2.4)*pow(px,Dtype(1.0/2.4-1)) ;
         } else {
-            dr = d_;
+            dr = 12.92;
         }  
-
 
         bottom_diff[index] = dr*dx;
     }

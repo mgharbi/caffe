@@ -29,20 +29,15 @@ void LinearRGB2SRGBLayer<Dtype>::Forward_cpu(
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* top_data = top[0]->mutable_cpu_data();
 
-    const float t_ = 0.0031308;
-    const float a_ = 0.055;
-    const float b_ = 1+a_;
-    const float c_ = 1.0/2.4;
-    const float d_ = 12.92;
     for (int x = 0; x < bottom[0]->count(); ++x) 
     {
         Dtype px = bottom_data[x];
 
         // inverse sRGB companding
-        if ( px > t_ ) {
-            px = b_*pow(px,c_) - a_;
+        if ( px > 0.0031308 ) {
+            px = 1.055*pow(px,Dtype(1.0/2.4)) - 0.055;
         } else {
-            px = px * d_;
+            px = px * 12.92;
         }  
         top_data[x] = px;
     }
@@ -65,21 +60,16 @@ void LinearRGB2SRGBLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     //    - chain rule dL/dx = dL/dy* dy/dx
     //    - top_diff is dL/dy
 
-    const float t_ = 0.0031308;
-    const float a_ = 0.055;
-    const float b_ = 1+a_;
-    const float c_ = 1.0/2.4;
-    const float d_ = 12.92;
     for (int x = 0; x < bottom[0]->count(); ++x) 
     {
         Dtype dx = top_diff[x];
         Dtype px = bottom_data[x];
         Dtype dr = Dtype(0);
 
-        if ( px > t_ ) {
-            dr = b_*c_*pow(px,c_-1) ;
+        if ( px > 0.0031308 ) {
+            dr = 1.055*(1.0/2.4)*pow(px,Dtype(1.0/2.4-1)) ;
         } else {
-            dr = d_;
+            dr = 12.92;
         }  
 
         bottom_diff[x] = dr*dx;
