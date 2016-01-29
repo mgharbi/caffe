@@ -10,7 +10,6 @@ namespace caffe {
 template <typename Dtype>
 void SRGB2LinearRGBLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  CHECK_EQ(bottom[0]->shape()[1], 3) << "Input to srgb2linear_rgb layer should have 3 channels" ;
 }
 
 template <typename Dtype>
