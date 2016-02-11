@@ -399,6 +399,7 @@ message LayerParameter {
   optional AddNoiseParameter add_noise_param = 203;
   optional SynthDataParameter synth_data_param = 204;
   optional AddScalarParameter add_scalar_param = 205;
+  optional CropParameter crop_param = 206;
 }
 
 // Message that stores parameters used to apply transformation
@@ -1269,6 +1270,12 @@ message PReLUParameter {
 
 message OffsetCropParameter {
     required uint32 index = 1;
+}
+
+message CropParameter {
+    optional uint32 crop_size = 1;
+    optional uint32 crop_h    = 2;
+    optional uint32 crop_w    = 3;
 }
 
 message MosaicParameter {

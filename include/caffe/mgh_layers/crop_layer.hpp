@@ -26,7 +26,8 @@ class CropLayer : public Layer<Dtype> {
 
         virtual inline const char* type() const { return "Crop"; }
 
-        virtual inline int ExactNumBottomBlobs() const { return 2; }
+        virtual inline int MaxNumBottomBlobs() const { return 2; }
+        virtual inline int MinNumBottomBlobs() const { return 1; }
         virtual inline int ExactNumTopBlobs() const { return 1; }
 
     protected:

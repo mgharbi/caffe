@@ -25,7 +25,7 @@ void OffsetCropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK_GE(offset_x,0) << "Offset must be positive";
   CHECK_GE(offset_y,0) << "Offset must be positive";
   CHECK_LE(offset_x+bottom[1]->width(),bottom[0]->width()) << "Crop must be smaller thant target";
-  CHECK_GE(offset_y+bottom[0]->height(),bottom[0]->height()) << "Crop must be smaller thant target";
+  CHECK_LE(offset_y+bottom[0]->height(),bottom[0]->height()) << "Crop must be smaller thant target";
 }
 
 template <typename Dtype>

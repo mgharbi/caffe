@@ -11,19 +11,37 @@ namespace caffe {
 
 template <typename Dtype>
 void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  crop_h_ = (bottom[0]->height()-bottom[1]->height())/2;
-  crop_w_ = (bottom[0]->width()-bottom[1]->width())/2;
-  CHECK_GE(crop_h_,0) << "Crop size must be stricly positive";
-  CHECK_GE(crop_w_,0) << "Crop size must be stricly positive";
+        const vector<Blob<Dtype>*>& top) {
+
+    CropParameter crop_param = this->layer_param_.crop_param();
+    if (crop_param.has_crop_h() || ccrop_param.has_crop_w()) {
+        CHECK_EQ(false, crop_param.has_crop_size())
+            << "Either crop_size or crop_h/w should be specified; not both.";
+        crop_h_ = crop_param.crop_h();
+        crop_w_ = crop_param.crop_w();
+    } else if (crop_param.has_crop_size()){
+        crop_h_ = crop_param.crop_size();
+        crop_w_ = crop_param.crop_size();
+    } else { // Then we compute the crop size from blob 0 - blob 1
+        CHECK_EQ((bottom[0]->height()-bottom[1]->height()) % 2,0) << "Size difference must be even, not implemented for odd sizes";
+        CHECK_EQ((bottom[0]->width()-bottom[1]->width()) % 2,0) << "Size difference must be even, not implemented for odd sizes";
+        // Blob 1 has the reference dimensions
+        crop_h_ = (bottom[0]->height()-bottom[1]->height())/2;
+        crop_w_ = (bottom[0]->width()-bottom[1]->width())/2;
+    }
+    CHECK_GE(crop_h_,0) << "Crop size must be positive";
+    CHECK_GE(crop_w_,0) << "Crop size must be positive";
+
+    CHECK_LE(2*crop_h_+1, bottom[0]->height()) << "Crop size must be smaller than input to be cropped";
+    CHECK_LE(2*crop_w_+1, bottom[0]->width()) << "Crop size must be smaller than input to be cropped";
 }
 
 template <typename Dtype>
 void CropLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top)
+        const vector<Blob<Dtype>*>& top)
 {
-    top[0]->Reshape(bottom[0]->num(), bottom[0]->channels(), bottom[1]->height(),
-            bottom[1]->width());
+    top[0]->Reshape(bottom[0]->num(), bottom[0]->channels(), bottom[0]->height()-2*crop_h_,
+            bottom[0]->width()-2*crop_w_);
 }
 
 template <typename Dtype>
@@ -32,34 +50,33 @@ void CropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 {
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* top_data = top[0]->mutable_cpu_data();
-    for (int n = 0; n < top[0]->num(); ++n) {
-        for (int c = 0; c < top[0]->channels(); ++c) {
-            for (int h = 0; h < top[0]->height(); ++h) {
-                caffe_copy(top[0]->width(),
-                        bottom_data + bottom[0]->offset(n, c, crop_h_ + h, crop_w_),
-                        top_data + top[0]->offset(n, c, h));
-            }
-        }
+    for (int n = 0; n < top[0]->num(); ++n)
+    for (int c = 0; c < top[0]->channels(); ++c)
+    for (int h = 0; h < top[0]->height(); ++h) 
+    {
+        // Copy row by row
+        caffe_copy(top[0]->width(),
+            bottom_data + bottom[0]->offset(n, c, crop_h_ + h, crop_w_),
+            top_data + top[0]->offset(n, c, h));
     }
 }
 
 template <typename Dtype>
 void CropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  const Dtype* top_diff = top[0]->cpu_diff();
-  Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
-  if (propagate_down[0]) {
-    caffe_set(bottom[0]->count(), static_cast<Dtype>(0), bottom_diff);
-    for (int n = 0; n < top[0]->num(); ++n) {
-      for (int c = 0; c < top[0]->channels(); ++c) {
-        for (int h = 0; h < top[0]->height(); ++h) {
-          caffe_copy(top[0]->width(),
-              top_diff + top[0]->offset(n, c, h),
-              bottom_diff + bottom[0]->offset(n, c, crop_h_ + h, crop_w_));
+        const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    const Dtype* top_diff = top[0]->cpu_diff();
+    Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
+    if (propagate_down[0]) {
+        caffe_set(bottom[0]->count(), static_cast<Dtype>(0), bottom_diff);
+        for (int n = 0; n < top[0]->num(); ++n)
+        for (int c = 0; c < top[0]->channels(); ++c)
+        for (int h = 0; h < top[0]->height(); ++h) 
+        {
+            caffe_copy(top[0]->width(),
+                top_diff + top[0]->offset(n, c, h),
+                bottom_diff + bottom[0]->offset(n, c, crop_h_ + h, crop_w_));
         }
-      }
     }
-  }
 }
 
 #ifdef CPU_ONLY
