@@ -1290,9 +1290,8 @@ message AddNoiseParameter {
 }
 
 message SynthDataParameter {
-  // This layer produces N >= 1 top blobs.  DummyDataParameter must specify 1 or N
-  // shape fields, and 0, 1 or N data_fillers.
-  repeated BlobShape shape = 6;
+  required BlobShape shape = 1;
+  repeated string type = 2;
 
 }
 

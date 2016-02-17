@@ -34,7 +34,6 @@ void Rot90Layer<Dtype>::Forward_cpu(
     Dtype* top_data = top[0]->mutable_cpu_data();
 
     vector<int> shape = bottom[0]->shape();
-    int w = shape[3];
 
     float* randomize = new float[shape[0]];
     caffe_rng_uniform<float>(shape[0], 0.0, 1.0, randomize);
