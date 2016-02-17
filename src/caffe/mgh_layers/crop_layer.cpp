@@ -14,7 +14,7 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top) {
 
     CropParameter crop_param = this->layer_param_.crop_param();
-    if (crop_param.has_crop_h() || ccrop_param.has_crop_w()) {
+    if (crop_param.has_crop_h() || crop_param.has_crop_w()) {
         CHECK_EQ(false, crop_param.has_crop_size())
             << "Either crop_size or crop_h/w should be specified; not both.";
         crop_h_ = crop_param.crop_h();
