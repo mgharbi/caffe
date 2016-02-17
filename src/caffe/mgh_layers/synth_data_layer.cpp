@@ -21,10 +21,11 @@ void SynthDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     top[0]->Reshape(param.shape());
 
     const int num_types = param.type_size();
-    types_.reserve(num_types);
+    CHECK(num_types > 0) << "SynthDataLayer should have at least one type"
+        << " SynthDataLayer generates square patches";
     for (int i = 0; i < num_types; ++i)
     {
-        types_[i] = param.type(i);
+        types_.push_back(param.type(i));
     }
 
 }
@@ -42,18 +43,29 @@ void SynthDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     // - c channels per patch
     // - h height
     // - w width
-    cv::Mat sample;
     int h = shape[2];
+    cv::Mat sample;
     for (int n = 0; n < shape[0]; ++n) { // each sample 
-        // TODO: generate a patch for each patch
-        // sample = generator_.get_sine_sample(h);
+
+        unsigned int type_id = caffe_rng_rand() % types_.size();
+
+        if (types_[type_id] == "sine") {
+            sample = generator_.get_sine_sample(h);
+        } else if (types_[type_id] == "stroke") {
+            sample = generator_.get_stroke_sample(h);
+        } else if (types_[type_id] == "ellipse") {
+            sample = generator_.get_ellipse_sample(h);
+        } else {
+            NOT_IMPLEMENTED;
+        }
+
 
         for (int32_t i=0; i<h; i++) {
             for (int32_t j=0; j<h; j++) {
-                // cv::Vec3f rgb = sample.at<cv::Vec3f>(i,j);
-                // top_data[top[0]->offset(n,0,j,i)] = rgb(0);
-                // top_data[top[0]->offset(n,1,j,i)] = rgb(1);
-                // top_data[top[0]->offset(n,2,j,i)] = rgb(2);
+                cv::Vec3f rgb = sample.at<cv::Vec3f>(i,j);
+                top_data[top[0]->offset(n,0,j,i)] = rgb(0);
+                top_data[top[0]->offset(n,1,j,i)] = rgb(1);
+                top_data[top[0]->offset(n,2,j,i)] = rgb(2);
             }
         }
     }
@@ -245,7 +257,7 @@ cv::Mat SyntheticPatchGenerator::rotate(cv::Mat source, float angle) {
     cv::Point2f src_center(source.cols/2.0f, source.rows/2.0f);
     cv::Mat rot_mat = getRotationMatrix2D(src_center, angle, 1.0);
     cv::Mat dst;
-    warpAffine(source, dst, rot_mat, source.size());
+    warpAffine(source, dst, rot_mat, source.size(), cv::INTER_LINEAR, cv::BORDER_REPLICATE);
     return dst;
 }
 
