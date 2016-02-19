@@ -1276,6 +1276,12 @@ message CropParameter {
     optional uint32 crop_size = 1;
     optional uint32 crop_h    = 2;
     optional uint32 crop_w    = 3;
+    enum CropMode {
+        MATCH_SECOND_INPUT = 0;
+        FROM_PROTO_PARAM = 1;
+        FROM_BLOB_PARAM = 2;
+    }
+    optional CropMode mode = 4 [default = FROM_PROTO_PARAM]; // element-wise operation
 }
 
 message MosaicParameter {

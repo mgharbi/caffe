@@ -26,7 +26,6 @@ class CropLayer : public Layer<Dtype> {
 
         virtual inline const char* type() const { return "Crop"; }
 
-        virtual inline int MaxNumBottomBlobs() const { return 2; }
         virtual inline int MinNumBottomBlobs() const { return 1; }
         virtual inline int ExactNumTopBlobs() const { return 1; }
 
@@ -40,7 +39,9 @@ class CropLayer : public Layer<Dtype> {
         virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
                 const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
+        
         int crop_h_, crop_w_;
+        CropParameter_CropMode mode_;
 };
 
 }  // namespace caffe
