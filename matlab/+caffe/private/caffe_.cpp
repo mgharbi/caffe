@@ -613,6 +613,13 @@ static void to_datum(MEX_ARGS) {
     output.set(0, datum.SerializeAsString());
 }
 
+// Usage: caffe_('version')
+static void version(MEX_ARGS) {
+  mxCHECK(nrhs == 0, "Usage: caffe_('version')");
+  // Return version string
+  plhs[0] = mxCreateString(AS_STRING(CAFFE_VERSION));
+}
+
 /** -----------------------------------------------------------------
  ** Available commands.
  **/
@@ -653,6 +660,7 @@ static handler_registry handlers[] = {
   { "from_datum",         from_datum      },
   { "to_datum",           to_datum        },
   { "write_mean",         write_mean      },
+  { "version",            version         },
   // The end.
   { "END",                NULL            },
 };

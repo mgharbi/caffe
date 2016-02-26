@@ -98,7 +98,7 @@ def _Net_forward(self, blobs=None, start=None, end=None, **kwargs):
         # Set input according to defined shapes and make arrays single and
         # C-contiguous as Caffe expects.
         for in_, blob in kwargs.iteritems():
-            if blob.shape[0] != self.blobs[in_].num:
+            if blob.shape[0] != self.blobs[in_].shape[0]:
                 raise Exception('Input is not batch sized')
             self.blobs[in_].data[...] = blob
 
@@ -146,7 +146,7 @@ def _Net_backward(self, diffs=None, start=None, end=None, **kwargs):
         # Set top diffs according to defined shapes and make arrays single and
         # C-contiguous as Caffe expects.
         for top, diff in kwargs.iteritems():
-            if diff.shape[0] != self.blobs[top].num:
+            if diff.shape[0] != self.blobs[top].shape[0]:
                 raise Exception('Diff is not batch sized')
             self.blobs[top].diff[...] = diff
 
@@ -257,7 +257,7 @@ def _Net_batch(self, blobs):
     batch: {blob name: list of blobs} dict for a single batch.
     """
     num = len(blobs.itervalues().next())
-    batch_size = self.blobs.itervalues().next().num
+    batch_size = self.blobs.itervalues().next().shape[0]
     remainder = num % batch_size
     num_batches = num / batch_size
 
@@ -276,6 +276,22 @@ def _Net_batch(self, blobs):
                                                  padding])
         yield padded_batch
 
+
+class _Net_IdNameWrapper:
+    """
+    A simple wrapper that allows the ids propery to be accessed as a dict
+    indexed by names. Used for top and bottom names
+    """
+    def __init__(self, net, func):
+        self.net, self.func = net, func
+
+    def __getitem__(self, name):
+        # Map the layer name to id
+        ids = self.func(self.net, list(self.net._layer_names).index(name))
+        # Map the blob id to name
+        id_to_name = list(self.net.blobs)
+        return [id_to_name[i] for i in ids]
+
 # Attach methods to Net.
 Net.blobs = _Net_blobs
 Net.blob_loss_weights = _Net_blob_loss_weights
@@ -288,3 +304,5 @@ Net.set_input_arrays = _Net_set_input_arrays
 Net._batch = _Net_batch
 Net.inputs = _Net_inputs
 Net.outputs = _Net_outputs
+Net.top_names = property(lambda n: _Net_IdNameWrapper(n, Net._top_ids))
+Net.bottom_names = property(lambda n: _Net_IdNameWrapper(n, Net._bottom_ids))

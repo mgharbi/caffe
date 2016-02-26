@@ -1,5 +1,5 @@
-#ifndef CAFFE_INNER_PRODUCT_LAYER_HPP_
-#define CAFFE_INNER_PRODUCT_LAYER_HPP_
+#ifndef CAFFE_BIAS_LAYER_HPP_
+#define CAFFE_BIAS_LAYER_HPP_
 
 #include <vector>
 
@@ -10,26 +10,29 @@
 namespace caffe {
 
 /**
- * @brief Also known as a "fully-connected" layer, computes an inner product
- *        with a set of learned weights, and (optionally) adds biases.
+ * @brief Computes a sum of two input Blobs, with the shape of the
+ *        latter Blob "broadcast" to match the shape of the former.
+ *        Equivalent to tiling the latter Blob, then computing the elementwise
+ *        sum.
  *
- * TODO(dox): thorough documentation for Forward, Backward, and proto params.
+ * The second input may be omitted, in which case it's learned as a parameter
+ * of the layer.
  */
 template <typename Dtype>
-class InnerProductLayer : public Layer<Dtype> {
+class BiasLayer : public Layer<Dtype> {
  public:
-  explicit InnerProductLayer(const LayerParameter& param)
+  explicit BiasLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "InnerProduct"; }
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
+  virtual inline const char* type() const { return "Bias"; }
+  virtual inline int MinBottomBlobs() const { return 1; }
+  virtual inline int MaxBottomBlobs() const { return 2; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
- protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
@@ -39,14 +42,13 @@ class InnerProductLayer : public Layer<Dtype> {
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
-  int M_;
-  int K_;
-  int N_;
-  bool bias_term_;
+ private:
   Blob<Dtype> bias_multiplier_;
-  bool transpose_;  ///< if true, assume transposed weights
+  int outer_dim_, bias_dim_, inner_dim_, dim_;
 };
+
+
 
 }  // namespace caffe
 
-#endif  // CAFFE_INNER_PRODUCT_LAYER_HPP_
+#endif  // CAFFE_BIAS_LAYER_HPP_
