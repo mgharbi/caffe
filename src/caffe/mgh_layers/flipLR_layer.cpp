@@ -31,6 +31,13 @@ void FlipLRLayer<Dtype>::Forward_cpu(
 
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* top_data = top[0]->mutable_cpu_data();
+    const int count = top[0]->count();
+
+    // Process only during training
+    if (this->phase_ != TRAIN) {
+        caffe_copy(count, bottom_data, top_data);
+        return;
+    }
 
     vector<int> shape = bottom[0]->shape();
     int w = shape[3];

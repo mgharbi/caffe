@@ -16,15 +16,15 @@ __global__ void FlipLRForward(const int n, const Dtype* in, Dtype* out, const fl
         int blob_idx = index / (height*width*chans);
 
         int vx = index % (height*width*chans);
-        int z = vx / (height*width);
+        int z  = vx / (height*width);
         int px = vx % (height*width);
-        int y = px/width;
-        int x = px % width;
+        int y  = px/width;
+        int x  = px % width;
 
         int dst_idx = x + width*(y + height * (z + chans*blob_idx));
 
         // Flip only half of the images on average
-        float f = randomize[0];
+        float f = randomize[blob_idx];
         int src_idx = width-1-x + width*(y + height * (z + chans*blob_idx));
         out[dst_idx] = f > 0.5f ? in[dst_idx] : in[src_idx];
     }
@@ -50,8 +50,6 @@ void FlipLRLayer<Dtype>::Forward_gpu(
             npix, bottom_data, top_data, randomize.gpu_data() ,
             shape[1], shape[2], shape[3]);
     CUDA_POST_KERNEL_CHECK;
-    cudaDeviceSynchronize();
-    // delete[] randomize;
 }
 
 INSTANTIATE_LAYER_GPU_FUNCS(FlipLRLayer);

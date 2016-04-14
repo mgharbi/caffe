@@ -16,17 +16,32 @@ __global__ void Rot90Forward(const int n, const Dtype* in, Dtype* out, const flo
         int blob_idx = index / (height*width*chans);
 
         int vx = index % (height*width*chans);
-        int z = vx / (height*width);
+        int z  = vx / (height*width);
         int px = vx % (height*width);
-        int y = px/width;
-        int x = px % width;
+        int y  = px/width;
+        int x  = px % width;
 
-        int dst_idx = x + width*(y + height * (z + chans*blob_idx));
+        int xp = x;
+        int yp = y;
+
+        if(randomize[blob_idx] < 0.25f) { // angle 0
+            xp = x;
+            yp = y;
+        } else if(randomize[blob_idx] < 0.5f) { // angle pi/2
+            xp = height-1-y;
+            yp = x;
+        } else if(randomize[blob_idx] < 0.75f) { // angle pi
+            xp = width-1-x;
+            yp = height-1-y;
+        } else { // angle 3*pi/2
+            xp = width-1-x;
+            yp = y;
+        }
+        int src_idx = xp + width*(yp + height * (z + chans*blob_idx));
 
         // Flip only half of the images on average
-        float f = randomize[0];
-        int src_idx = y + width*(z + height * (z + chans*blob_idx));
-        out[dst_idx] = f > 0.5f ? in[dst_idx] : in[src_idx];
+        int dst_idx = x + width*(y + height * (z + chans*blob_idx));
+        out[dst_idx] = in[src_idx];
     }
 }
 
@@ -45,14 +60,11 @@ void Rot90Layer<Dtype>::Forward_gpu(
     Blob<float> randomize(rand_shape);
     caffe_rng_uniform<float>(shape[0], 0.0, 1.0, randomize.mutable_cpu_data());
 
-
     int npix = shape[0]*shape[1]*shape[2]*shape[3];
     Rot90Forward<Dtype><<<CAFFE_GET_BLOCKS(npix), CAFFE_CUDA_NUM_THREADS>>>(
             npix, bottom_data, top_data, randomize.gpu_data() ,
             shape[1], shape[2], shape[3]);
     CUDA_POST_KERNEL_CHECK;
-    cudaDeviceSynchronize();
-    // delete[] randomize;
 }
 
 INSTANTIATE_LAYER_GPU_FUNCS(Rot90Layer);

@@ -1371,6 +1371,7 @@ message CropParameter {
 
 message MosaicParameter {
     required bool store_pattern = 1 [default = false];
+    required bool separate_channels = 2 [default = false];
 }
 message MGHPreprocessorParameter {
     required float randomized_ratio = 1 [default = 0.5];

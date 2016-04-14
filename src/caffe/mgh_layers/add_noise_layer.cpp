@@ -32,13 +32,17 @@ void AddNoiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
   top[0]->ReshapeLike(*bottom[0]);
   if(top.size() > 1) {
-      vector<int> shape;
-      shape.push_back(1);
+      vector<int> shape = bottom[0]->shape();
+      shape[1] = 1;
+      shape[2] = 1;
+      shape[3] = 1;
       top[1]->Reshape(shape);
   }
   if(top.size() > 2) {
-      vector<int> shape; 
-      shape.push_back(noise_level_.size());
+      vector<int> shape = bottom[0]->shape();
+      shape[1] = noise_level_.size();
+      shape[2] = 1;
+      shape[3] = 1;
       top[2]->Reshape(shape);
   }
 }
@@ -50,28 +54,38 @@ void AddNoiseLayer<Dtype>::Forward_cpu(
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* top_data          = top[0]->mutable_cpu_data();
 
-    int count = bottom[0]->count();
-
-    int select = caffe_rng_rand() % noise_level_.size();
-
-    float noise_std = noise_level_[select];
-
-    Blob<Dtype> noise;
-    noise.ReshapeLike(*bottom[0]);
-    Dtype *noise_data = noise.mutable_cpu_data();
-    caffe_rng_gaussian(count, Dtype(0), Dtype(noise_std), noise_data );
-    caffe_add(count, bottom_data , noise_data, top_data);
-    
-
     // top 1 is the noise level
     // top 2 is a 0-1 vector indicating which level has been chosen
-    if(top.size() > 1) {
-        *(top[1]->mutable_cpu_data()) = noise_std;
-    }
-    if(top.size() > 2) {
-        Dtype* noise_select = top[2]->mutable_cpu_data();
-        caffe_set(noise_level_.size(), Dtype(0), noise_select);
-        *(noise_select+select) = Dtype(1);
+
+    int n_noise_levels = noise_level_.size();
+
+    vector<int> shape = bottom[0]->shape();
+
+    vector<int> imshape = bottom[0]->shape();
+    imshape[0] = 1;
+    
+    for (int n = 0; n < shape[0]; ++n) {
+        // Sample a noise level
+        int select = caffe_rng_rand() % noise_level_.size();
+        float noise_std = noise_level_[select];
+
+        Blob<Dtype> noise;
+        noise.Reshape(imshape);
+        int count = noise.count();
+
+        Dtype *noise_data = noise.mutable_cpu_data();
+        caffe_rng_gaussian(count, Dtype(0), Dtype(noise_std), noise_data );
+
+        caffe_add(count, bottom_data+bottom[0]->offset(n), noise_data, top_data+top[0]->offset(n));
+
+        if(top.size() > 1) {
+            caffe_set(1, Dtype(noise_std), top[1]->mutable_cpu_data()+top[1]->offset(n));
+        }
+        if(top.size() > 2) {
+            Dtype* noise_select = top[2]->mutable_cpu_data();
+            caffe_set(n_noise_levels, Dtype(0), noise_select+top[2]->offset(n));
+            caffe_set(1, Dtype(1), noise_select+top[2]->offset(n,select));
+        }
     }
 }
 

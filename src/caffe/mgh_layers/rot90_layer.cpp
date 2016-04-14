@@ -32,6 +32,13 @@ void Rot90Layer<Dtype>::Forward_cpu(
 
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* top_data = top[0]->mutable_cpu_data();
+    const int count = top[0]->count();
+
+    // Process only during training
+    if (this->phase_ != TRAIN) {
+        caffe_copy(count, bottom_data, top_data);
+        return;
+    }
 
     vector<int> shape = bottom[0]->shape();
 
@@ -39,19 +46,33 @@ void Rot90Layer<Dtype>::Forward_cpu(
     caffe_rng_uniform<float>(shape[0], 0.0, 1.0, randomize);
 
     for (int n = 0; n < shape[0]; ++n) {
-        if(randomize[n] > 0.5f) {
+        if(randomize[n] < 0.25f) { // angle 0
             for (int z = 0; z < shape[1]; ++z) 
             for (int y = 0; y < shape[2]; ++y) 
             for (int x = 0; x < shape[3]; ++x) 
             {
                 top_data[top[0]->offset(n,z,y,x)] = bottom_data[bottom[0]->offset(n,z,y,x)];
             }
-        }else {
+        } else if(randomize[n] < 0.5f) { // angle pi/2
             for (int z = 0; z < shape[1]; ++z) 
             for (int y = 0; y < shape[2]; ++y) 
             for (int x = 0; x < shape[3]; ++x) 
             {
-                top_data[top[0]->offset(n,z,y,x)] = bottom_data[bottom[0]->offset(n,z,x,y)];
+                top_data[top[0]->offset(n,z,y,x)] = bottom_data[bottom[0]->offset(n,z,x,shape[2]-1-y)];
+            }
+        } else if(randomize[n] < 0.75f) { // angle pi
+            for (int z = 0; z < shape[1]; ++z) 
+            for (int y = 0; y < shape[2]; ++y) 
+            for (int x = 0; x < shape[3]; ++x) 
+            {
+                top_data[top[0]->offset(n,z,y,x)] = bottom_data[bottom[0]->offset(n,z,shape[2]-1-y,shape[3]-1-x)];
+            }
+        } else { // angle 3*pi/2
+            for (int z = 0; z < shape[1]; ++z) 
+            for (int y = 0; y < shape[2]; ++y) 
+            for (int x = 0; x < shape[3]; ++x) 
+            {
+                top_data[top[0]->offset(n,z,y,x)] = bottom_data[bottom[0]->offset(n,z,shape[3]-1-x,y)];
             }
         }
     }

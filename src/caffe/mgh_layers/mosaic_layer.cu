@@ -12,9 +12,20 @@ template <typename Dtype>
 __global__ void mosaick_row_kernel(const int n, const int height, const int width,
     const int src_outer_stride, const int src_inner_stride,
     const int dst_outer_stride, const int dst_inner_stride,
-    bool store_pattern,
+    bool store_pattern, int separate_channels,
     const Dtype* src, Dtype* dst) 
 {
+    // channel indices
+    int r_chan = 0;
+    int g_chan = 0;
+    int b_chan = 0;
+    int pattern_start = 1; // channel index for the pattern
+
+    if(separate_channels) {
+        g_chan = 1;
+        b_chan = 2;
+        pattern_start = 3;
+    }
 
     CUDA_KERNEL_LOOP(index, n) {
         int blob_idx = index / (height);
@@ -30,17 +41,16 @@ __global__ void mosaick_row_kernel(const int n, const int height, const int widt
             for (int x = 0; x < width; ++x) {
                 if ( x % 2 == 0) { // G
                     // top_data[top[0]->offset(n,0,y,x)] = bottom_data[bottom[0]->offset(n,1,y,x)];
-                    dst[dst_start + x] = src[src_start + x + 1*chan_stride];
+                    dst[dst_start + x + g_chan*chan_stride] = src[src_start + x + 1*chan_stride];
                     if(store_pattern){
-                        // top_data[top[0]->offset(n,2,y,x)] = 1;
-                        dst[dst_start + x + 2*chan_stride] = 1;
+                        dst[dst_start + x + (pattern_start+1)*chan_stride] = 1;
                     }
                 } else { // R
                     // top_data[top[0]->offset(n,0,y,x)] = bottom_data[bottom[0]->offset(n,0,y,x)];
-                    dst[dst_start + x] = src[src_start + x + 0*chan_stride];
+                    dst[dst_start + x + r_chan*chan_stride] = src[src_start + x + 0*chan_stride];
                     if(store_pattern){
                         // top_data[top[0]->offset(n,1,y,x)] = 1;
-                        dst[dst_start + x + 1*chan_stride] = 1;
+                        dst[dst_start + x + pattern_start*chan_stride] = 1;
                     }
                 }
             }
@@ -48,17 +58,17 @@ __global__ void mosaick_row_kernel(const int n, const int height, const int widt
             for (int x = 0; x < width; ++x) {
                 if ( x % 2 == 0) { // B
                     // top_data[top[0]->offset(n,0,y,x)] = bottom_data[bottom[0]->offset(n,2,y,x)];
-                    dst[dst_start + x] = src[src_start + x + 2*chan_stride];
+                    dst[dst_start + x + b_chan*chan_stride] = src[src_start + x + 2*chan_stride];
                     if(store_pattern){
                         // top_data[top[0]->offset(n,3,y,x)] = 1;
-                        dst[dst_start + x + 3*chan_stride] = 1;
+                        dst[dst_start + x + (pattern_start+2)*chan_stride] = 1;
                     }
                 } else { // G
                     // top_data[top[0]->offset(n,0,y,x)] = bottom_data[bottom[0]->offset(n,1,y,x)];
-                    dst[dst_start + x] = src[src_start + x + 1*chan_stride];
+                    dst[dst_start + x + g_chan*chan_stride] = src[src_start + x + 1*chan_stride];
                     if(store_pattern){
                         // top_data[top[0]->offset(n,2,y,x)] = 1;
-                        dst[dst_start + x + 2*chan_stride] = 1;
+                        dst[dst_start + x + (pattern_start+1)*chan_stride] = 1;
                     }
                 }
             }
@@ -88,7 +98,7 @@ void MosaicLayer<Dtype>::Forward_gpu(
             lines, top[0]->height(), top[0]->width(),
             src_outer_stride, src_inner_stride,
             dst_outer_stride, dst_inner_stride,
-            store_pattern_,
+            store_pattern_, separate_channels_,
             bottom_data, top_data);
     CUDA_POST_KERNEL_CHECK;
     // Mosaick
