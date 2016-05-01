@@ -38,9 +38,7 @@ class KillChannelLayer : public Layer<Dtype> {
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-      NOT_IMPLEMENTED;
-  }
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
   float randomized_ratio_;
   int Rand(int n);

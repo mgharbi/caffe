@@ -52,6 +52,12 @@ void FlipLRLayer<Dtype>::Forward_gpu(
     CUDA_POST_KERNEL_CHECK;
 }
 
+template <typename Dtype>
+void FlipLRLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    NOT_IMPLEMENTED;
+}
+
 INSTANTIATE_LAYER_GPU_FUNCS(FlipLRLayer);
 
 }  // namespace caffe

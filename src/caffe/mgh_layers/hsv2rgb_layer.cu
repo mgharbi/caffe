@@ -87,6 +87,12 @@ void HSV2RGBLayer<Dtype>::Forward_gpu(
 
 }
 
+template <typename Dtype>
+void HSV2RGBLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    NOT_IMPLEMENTED;
+}
+
 INSTANTIATE_LAYER_GPU_FUNCS(HSV2RGBLayer);
 
 }  // namespace caffe

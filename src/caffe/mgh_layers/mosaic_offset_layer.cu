@@ -69,6 +69,11 @@ void MosaicOffsetLayer<Dtype>::Forward_gpu(
             shape[3], shape[2],shape[1], offsets.gpu_data());
 
 }
+template <typename Dtype>
+void MosaicOffsetLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    NOT_IMPLEMENTED;
+}
 INSTANTIATE_LAYER_GPU_FUNCS(MosaicOffsetLayer);
 
 }  // namespace caffe

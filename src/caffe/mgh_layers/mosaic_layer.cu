@@ -107,6 +107,12 @@ void MosaicLayer<Dtype>::Forward_gpu(
     // G R G R G
 }
 
+template <typename Dtype>
+void MosaicLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    NOT_IMPLEMENTED;
+}
+
 
 INSTANTIATE_LAYER_GPU_FUNCS(MosaicLayer);
 

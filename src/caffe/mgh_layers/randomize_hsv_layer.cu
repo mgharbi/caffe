@@ -66,6 +66,12 @@ void RandomizeHSVLayer<Dtype>::Forward_gpu(
     CUDA_POST_KERNEL_CHECK;
 }
 
+template <typename Dtype>
+void RandomizeHSVLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    NOT_IMPLEMENTED;
+}
+
 INSTANTIATE_LAYER_GPU_FUNCS(RandomizeHSVLayer);
 
 }  // namespace caffe

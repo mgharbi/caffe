@@ -91,6 +91,12 @@ void MosaicLayer<Dtype>::Forward_cpu(
     }
 }
 
+template <typename Dtype>
+void MosaicLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    NOT_IMPLEMENTED;
+}
+
 #ifdef CPU_ONLY
 STUB_GPU(MosaicLayer);
 #endif

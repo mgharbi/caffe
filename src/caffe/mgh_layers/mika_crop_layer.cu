@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/mgh_layers/crop_layer.hpp"
+#include "caffe/mgh_layers/mika_crop_layer.hpp"
 
 namespace caffe {
 
@@ -24,7 +24,7 @@ __global__ void copy_kernel(const int n, const int height, const int width,
 }
 
 template <typename Dtype>
-void CropLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+void MikaCropLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top) 
 {
     const Dtype* bottom_data = bottom[0]->gpu_data();
@@ -41,7 +41,7 @@ void CropLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CropLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+void MikaCropLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
         const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
 {
     const Dtype* top_diff = top[0]->gpu_diff();
@@ -59,6 +59,6 @@ void CropLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     }
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(CropLayer);
+INSTANTIATE_LAYER_GPU_FUNCS(MikaCropLayer);
 
 }  // namespace caffe

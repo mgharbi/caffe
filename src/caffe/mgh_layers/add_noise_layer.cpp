@@ -92,9 +92,6 @@ void AddNoiseLayer<Dtype>::Forward_cpu(
     }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(AddNoiseLayer);
-#endif
 
 INSTANTIATE_CLASS(AddNoiseLayer);
 REGISTER_LAYER_CLASS(AddNoise);

@@ -1,5 +1,5 @@
-#ifndef CROP_LAYER_HPP_NU9MFTCO
-#define CROP_LAYER_HPP_NU9MFTCO
+#ifndef MIKA_CROP_LAYER_HPP_NU9MFTCO
+#define MIKA_CROP_LAYER_HPP_NU9MFTCO
 
 
 
@@ -15,16 +15,16 @@
 namespace caffe {
 
 template <typename Dtype>
-class CropLayer : public Layer<Dtype> {
+class MikaCropLayer : public Layer<Dtype> {
     public:
-        explicit CropLayer(const LayerParameter& param)
+        explicit MikaCropLayer(const LayerParameter& param)
             : Layer<Dtype>(param) {}
         virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
                 const vector<Blob<Dtype>*>& top);
         virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
                 const vector<Blob<Dtype>*>& top);
 
-        virtual inline const char* type() const { return "Crop"; }
+        virtual inline const char* type() const { return "MikaCrop"; }
 
         virtual inline int MinNumBottomBlobs() const { return 1; }
         virtual inline int ExactNumTopBlobs() const { return 1; }
@@ -41,10 +41,10 @@ class CropLayer : public Layer<Dtype> {
 
         
         int crop_h_, crop_w_;
-        CropParameter_CropMode mode_;
+        MikaCropParameter_CropMode mode_;
 };
 
 }  // namespace caffe
 
-#endif /* end of include guard: CROP_LAYER_HPP_NU9MFTCO */
+#endif /* end of include guard: MIKA_CROP_LAYER_HPP_NU9MFTCO */
 

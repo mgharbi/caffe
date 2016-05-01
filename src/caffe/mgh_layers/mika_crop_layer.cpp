@@ -5,20 +5,20 @@
 
 #include "caffe/layer.hpp"
 #include "caffe/net.hpp"
-#include "caffe/mgh_layers/crop_layer.hpp"
+#include "caffe/mgh_layers/mika_crop_layer.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
-void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+void MikaCropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top) {
 
-    CropParameter crop_param = this->layer_param_.crop_param();
+    MikaCropParameter crop_param = this->layer_param_.mika_crop_param();
     mode_ = crop_param.mode();
     crop_h_ = 0;
     crop_w_ = 0;
     switch(mode_) {
-        case CropParameter_CropMode_MATCH_SECOND_INPUT:
+        case MikaCropParameter_CropMode_MATCH_SECOND_INPUT:
             // Then we compute the crop size from blob 0 - blob 1
             CHECK_EQ((bottom[0]->height()-bottom[1]->height()) % 2,0) << "Size difference must be even, not implemented for odd sizes";
             CHECK_EQ((bottom[0]->width()-bottom[1]->width()) % 2,0) << "Size difference must be even, not implemented for odd sizes";
@@ -26,7 +26,7 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
             crop_h_ = (bottom[0]->height()-bottom[1]->height())/2;
             crop_w_ = (bottom[0]->width()-bottom[1]->width())/2;
             break;
-        case CropParameter_CropMode_FROM_PROTO_PARAM:
+        case MikaCropParameter_CropMode_FROM_PROTO_PARAM:
             if (crop_param.has_crop_h() || crop_param.has_crop_w()) {
                 CHECK_EQ(false, crop_param.has_crop_size())
                     << "Either crop_size or crop_h/w should be specified; not both.";
@@ -41,7 +41,7 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
                 crop_w_ = crop_param.crop_size();
             }
             break;
-        case CropParameter_CropMode_FROM_BLOB_PARAM:
+        case MikaCropParameter_CropMode_FROM_BLOB_PARAM:
             CHECK_EQ(bottom.size(),2) << "In 'from_blob' mode, the crop layer needs two inputs";
             CHECK_EQ(false, crop_param.has_crop_w())
                 << "In 'from_blob' mode, the crop layer cannot take dimensions";
@@ -49,7 +49,7 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
                 << "In 'from_blob' mode, the crop layer cannot take dimensions";
             CHECK_EQ(false, crop_param.has_crop_size())
                 << "In 'from_blob' mode, the crop layer cannot take dimensions";
-            CHECK_EQ(bottom[1]->count(),2) << " In 'from_blob' mode, the 3rd input to the CropLayer needs to have 2 elements";
+            CHECK_EQ(bottom[1]->count(),2) << " In 'from_blob' mode, the 3rd input to the MikaCropLayer needs to have 2 elements";
             crop_w_ = bottom[1]->cpu_data()[0];
             crop_h_ = bottom[1]->cpu_data()[1];
             break;
@@ -61,11 +61,11 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CropLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+void MikaCropLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top)
 {
 
-    if(mode_ == CropParameter_CropMode_FROM_BLOB_PARAM) {
+    if(mode_ == MikaCropParameter_CropMode_FROM_BLOB_PARAM) {
         CHECK_GE(bottom[1]->cpu_data()[0],0) << "Blob crop size should be positive";
         CHECK_GE(bottom[1]->cpu_data()[1],0) << "Blob crop size should be positive";
         crop_w_ = (bottom[0]->width()-bottom[1]->cpu_data()[0])/2;
@@ -82,7 +82,7 @@ void CropLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+void MikaCropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top)
 {
 
@@ -100,7 +100,7 @@ void CropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+void MikaCropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
     const Dtype* top_diff = top[0]->cpu_diff();
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
@@ -118,10 +118,10 @@ void CropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 }
 
 #ifdef CPU_ONLY
-STUB_GPU(CropLayer);
+STUB_GPU(MikaCropLayer);
 #endif
 
-INSTANTIATE_CLASS(CropLayer);
-REGISTER_LAYER_CLASS(Crop);
+INSTANTIATE_CLASS(MikaCropLayer);
+REGISTER_LAYER_CLASS(MikaCrop);
 
 }  // namespace caffe
