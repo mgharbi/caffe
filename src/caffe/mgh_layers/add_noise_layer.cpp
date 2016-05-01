@@ -73,10 +73,13 @@ void AddNoiseLayer<Dtype>::Forward_cpu(
         noise.Reshape(imshape);
         int count = noise.count();
 
-        Dtype *noise_data = noise.mutable_cpu_data();
-        caffe_rng_gaussian(count, Dtype(0), Dtype(noise_std), noise_data );
-
-        caffe_add(count, bottom_data+bottom[0]->offset(n), noise_data, top_data+top[0]->offset(n));
+        if(noise_std > 0) {
+            Dtype *noise_data = noise.mutable_cpu_data();
+            caffe_rng_gaussian(count, Dtype(0), Dtype(noise_std), noise_data );
+            caffe_add(count, bottom_data+bottom[0]->offset(n), noise_data, top_data+top[0]->offset(n));
+        }else {
+            caffe_copy(count, bottom_data+bottom[0]->offset(n), top_data+top[0]->offset(n));
+        }
 
         if(top.size() > 1) {
             caffe_set(1, Dtype(noise_std), top[1]->mutable_cpu_data()+top[1]->offset(n));
