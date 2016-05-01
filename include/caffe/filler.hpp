@@ -261,6 +261,40 @@ class BilinearFiller : public Filler<Dtype> {
   }
 };
 
+template <typename Dtype>
+class NormalizedBilinearFiller : public Filler<Dtype> {
+ public:
+  explicit NormalizedBilinearFiller(const FillerParameter& param)
+      : Filler<Dtype>(param) {}
+  virtual void Fill(Blob<Dtype>* blob) {
+    CHECK_EQ(blob->num_axes(), 4) << "Blob must be 4 dim.";
+    CHECK_EQ(blob->width(), blob->height()) << "Filter must be square";
+    Dtype* data = blob->mutable_cpu_data();
+    int f = ceil(blob->width() / 2.);
+    float c = (2 * f - 1 - f % 2) / (2. * f);
+    float sum = 0.0f;
+    for (int y = 0; y < blob->height(); ++y) 
+    for (int x = 0; x < blob->width(); ++x) 
+    {
+          // float x = i % blob->width();
+          // float y = (i / blob->width()) % blob->height();
+        float filter_val =  (1 - fabs(x / f - c)) * (1 - fabs(y / f - c));
+        sum += filter_val;
+        for (int n = 0; n < blob->num(); ++n)
+        for (int z = 0; z < blob->channels(); ++z) 
+        {
+          data[blob->offset(n,z,y,x)] = filter_val;
+        }
+    }
+    for (int i = 0; i < blob->count(); ++i) {
+      data[i] /= sum;
+    }
+    CHECK_EQ(this->filler_param_.sparse(), -1)
+         << "Sparsity not supported by this Filler.";
+  }
+};
+
+
 /**
  * @brief Get a specific filler from the specification given in FillerParameter.
  *
@@ -284,6 +318,8 @@ Filler<Dtype>* GetFiller(const FillerParameter& param) {
     return new MSRAFiller<Dtype>(param);
   } else if (type == "bilinear") {
     return new BilinearFiller<Dtype>(param);
+  } else if (type == "normalized_bilinear") {
+    return new NormalizedBilinearFiller<Dtype>(param);
   } else {
     CHECK(false) << "Unknown filler name: " << param.type();
   }

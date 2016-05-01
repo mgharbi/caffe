@@ -86,7 +86,7 @@ def get_layer_label(layer, rankdir):
     if layer.type == 'Convolution' or layer.type == 'Deconvolution':
         # Outer double quotes needed or else colon characters don't parse
         # properly
-        node_label = '"%s%s(%s)%skernel size: %d%sstride: %d%spad: %d"' %\
+        node_label = '"%s%s(%s)%skernel size: %s%sstride: %s%spad: %s"' %\
                      (layer.name,
                       separator,
                       layer.type,
@@ -98,7 +98,7 @@ def get_layer_label(layer, rankdir):
                       layer.convolution_param.pad[0] if len(layer.convolution_param.pad._values) else 0)
     elif layer.type == 'Pooling':
         pooling_types_dict = get_pooling_types_dict()
-        node_label = '"%s%s(%s %s)%skernel size: %d%sstride: %d%spad: %d"' %\
+        node_label = '"%s%s(%s %s)%skernel size: %s%sstride: %s%spad: %s"' %\
                      (layer.name,
                       separator,
                       pooling_types_dict[layer.pooling_param.pool],

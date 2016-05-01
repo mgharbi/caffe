@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "mex.h"
+#include "mexplus.h"
 
 #include "caffe/caffe.hpp"
 
@@ -503,6 +504,114 @@ static void write_mean(MEX_ARGS) {
   WriteProtoToBinaryFile(blob_proto, mean_proto_file);
   mxFree(mean_proto_file);
 }
+// Usage: caffe_('from_datum', datum)
+static void from_datum(MEX_ARGS) {
+  mexplus::OutputArguments output(nlhs, plhs, 2);
+  mxCHECK(nrhs == 1 && mxIsChar(prhs[0]),
+      "Usage: caffe_('from_datum', datum)");
+  
+  caffe::Datum datum;
+  std::basic_string<char> datum_content = mexplus::MxArray::to<string>(prhs[0]); //datum received from matlab
+  
+  mxCHECK(datum.ParseFromString(datum_content),
+         "Failed to parse datum.");
+  output.set(0, datum.data());
+  
+   if (datum.has_encoded() && datum.encoded()) {
+     output.set(0, datum.data());
+   }
+   else {
+    vector<mwIndex> dimensions(3);
+    dimensions[0] = (datum.has_height()) ? datum.height() : 0;
+    dimensions[1] = (datum.has_width()) ? datum.width() : 0;
+    dimensions[2] = (datum.has_channels()) ? datum.channels() : 0;
+    mexplus::MxArray array;
+    vector<mwIndex> subscripts(3);
+    int index = 0;
+    if (datum.has_data()) {
+      array.reset(mxCreateNumericArray(dimensions.size(),
+                                       &dimensions[0],
+                                       mxUINT8_CLASS,
+                                       mxREAL));
+      const string& data = datum.data();
+      for (int k = dimensions[2] - 1; k >= 0; --k) { // BGR to RGB order.
+        subscripts[2] = k;
+        for (int i = 0; i < dimensions[0]; ++i) {
+          subscripts[0] = i;
+          for (int j = 0; j < dimensions[1]; ++j) {
+            subscripts[1] = j;
+            array.set(subscripts, data[index++]);
+          }
+        }
+      }
+    }
+    else if (datum.float_data_size() > 0) {
+      array.reset(mxCreateNumericArray(dimensions.size(),
+                                       &dimensions[0],
+                                       mxSINGLE_CLASS,
+                                       mxREAL));
+      for (int k = dimensions[2] - 1; k >= 0; --k) { // BGR to RGB order.
+        subscripts[2] = k;
+        for (int i = 0; i < dimensions[0]; ++i) {
+          subscripts[0] = i;
+          for (int j = 0; j < dimensions[1]; ++j) {
+            subscripts[1] = j;
+            array.set(subscripts, datum.float_data(index++));
+          }
+        }
+      }
+    }
+    output.set(0, array.release());
+  }
+   output.set(1, (datum.has_label()) ? datum.label() : 0);  
+}
+
+// Usage: caffe_('to_datum', img, label)
+static void to_datum(MEX_ARGS) {
+    using namespace std;
+    mexplus::InputArguments input(nrhs, prhs, 2);
+    mexplus::OutputArguments output(nlhs, plhs, 1);
+    caffe::Datum datum;
+    mexplus::MxArray array(input.get(0));
+    datum.set_label(input.get<int>(1));
+    vector<mwSize> dimensions = array.dimensions();
+    int width = dimensions[1];
+    int height = dimensions[0];
+    int channels = 1;
+    for (int i = 2; i < dimensions.size(); ++i)
+        channels *= dimensions[i];
+    datum.set_channels(channels);
+    datum.set_width(width);
+    datum.set_height(height);
+    vector<mwIndex> subscripts(3);
+    if (array.isUint8()) {
+        datum.mutable_data()->reserve(array.size());
+        for (int k = channels - 1; k >= 0; --k) { // RGB to BGR order.
+            subscripts[2] = k;
+            for (int i = 0; i < height; ++i) {
+                subscripts[0] = i;
+                for (int j = 0; j < width; ++j) {
+                    subscripts[1] = j;
+                    datum.mutable_data()->push_back(array.at<uint8_t>(subscripts));
+                }
+            }
+        }
+    }
+    else {
+        datum.mutable_float_data()->Reserve(array.size());
+        for (int k = channels - 1; k >= 0; --k) { // RGB to BGR order.
+            subscripts[2] = k;
+            for (int i = 0; i < height; ++i) {
+                subscripts[0] = i;
+                for (int j = 0; j < width; ++j) {
+                    subscripts[1] = j;
+                    datum.add_float_data(array.at<float>(subscripts));
+                }
+            }
+        }
+    }
+    output.set(0, datum.SerializeAsString());
+}
 
 // Usage: caffe_('version')
 static void version(MEX_ARGS) {
@@ -548,6 +657,8 @@ static handler_registry handlers[] = {
   { "get_init_key",       get_init_key    },
   { "reset",              reset           },
   { "read_mean",          read_mean       },
+  { "from_datum",         from_datum      },
+  { "to_datum",           to_datum        },
   { "write_mean",         write_mean      },
   { "version",            version         },
   // The end.
