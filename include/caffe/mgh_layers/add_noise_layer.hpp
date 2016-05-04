@@ -36,8 +36,13 @@ class AddNoiseLayer : public Layer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
       NOT_IMPLEMENTED;
   }
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
 
   vector<float> noise_level_;
+  AddNoiseParameter_NoiseMode mode_;
 
 };
 

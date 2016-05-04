@@ -365,7 +365,7 @@ message LayerParameter {
   optional ConcatParameter concat_param = 104;
   optional ContrastiveLossParameter contrastive_loss_param = 105;
   optional ConvolutionParameter convolution_param = 106;
-  optional CropParameter crop_param = 144;
+  optional CaffeCropParameter caffe_crop_param = 144;
   optional DataParameter data_param = 107;
   optional DropoutParameter dropout_param = 108;
   optional DummyDataParameter dummy_data_param = 109;
@@ -409,7 +409,7 @@ message LayerParameter {
   optional AddNoiseParameter add_noise_param = 203;
   optional SynthDataParameter synth_data_param = 204;
   optional AddScalarParameter add_scalar_param = 205;
-  optional MikaCropParameter mika_crop_param = 206;
+  optional CropParameter crop_param = 206;
 }
 
 // Message that stores parameters used to apply transformation
@@ -613,7 +613,7 @@ message ConvolutionParameter {
   optional bool force_nd_im2col = 17 [default = false];
 }
 
-message CropParameter {
+message CaffeCropParameter {
   // To crop, elements of the first bottom are selected to fit the dimensions
   // of the second, reference bottom. The crop is configured by
   // - the crop `axis` to pick the dimensions for cropping
@@ -1390,7 +1390,7 @@ message OffsetCropParameter {
     required uint32 index = 1;
 }
 
-message MikaCropParameter {
+message CropParameter {
     optional uint32 crop_size = 1;
     optional uint32 crop_h    = 2;
     optional uint32 crop_w    = 3;
@@ -1411,7 +1411,12 @@ message MGHPreprocessorParameter {
 }
 
 message AddNoiseParameter {
+    enum NoiseMode {
+        DISCRETE = 1;
+        CONTINUOUS = 2;
+    }
     repeated float noise_level = 1 ;
+    optional NoiseMode mode = 4 [default = DISCRETE]; 
 }
 
 message SynthDataParameter {
