@@ -5,7 +5,7 @@
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
 #include "caffe/filler.hpp"
-#include "caffe/layers/crop_layer.hpp"
+#include "caffe/layers/caffe_crop_layer.hpp"
 
 #include "caffe/test/test_caffe_main.hpp"
 #include "caffe/test/test_gradient_check_util.hpp"
@@ -52,8 +52,8 @@ TYPED_TEST(CropLayerTest, TestSetupShapeAll) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
   // Crop all dimensions
-  layer_param.mutable_crop_param()->set_axis(0);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(0);
+  CaffeCropLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->num_axes(); ++i) {
     EXPECT_EQ(this->blob_bottom_1_->shape(i), this->blob_top_->shape(i));
@@ -64,7 +64,7 @@ TYPED_TEST(CropLayerTest, TestSetupShapeDefault) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
   // Crop last two dimensions, axis is 2 by default
-  CropLayer<Dtype> layer(layer_param);
+  CaffeCropLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->num_axes(); ++i) {
     if (i < 2) {
@@ -79,8 +79,8 @@ TYPED_TEST(CropLayerTest, TestSetupShapeNegativeIndexing) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
   // Crop last dimension by negative indexing
-  layer_param.mutable_crop_param()->set_axis(-1);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(-1);
+  CaffeCropLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->num_axes(); ++i) {
     if (i < 3) {
@@ -98,7 +98,7 @@ TYPED_TEST(CropLayerTest, TestDimensionsCheck) {
   // the size blob has more channels than the data blob, but this is fine
   // since the channels dimension is not cropped in this configuration.
   this->blob_bottom_1_->Reshape(2, 5, 4, 2);
-  CropLayer<Dtype> layer(layer_param);
+  CaffeCropLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int i = 0; i < this->blob_top_->num_axes(); ++i) {
     if (i < 2) {
@@ -112,8 +112,8 @@ TYPED_TEST(CropLayerTest, TestDimensionsCheck) {
 TYPED_TEST(CropLayerTest, TestCropAll) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
-  layer_param.mutable_crop_param()->set_axis(0);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(0);
+  CaffeCropLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int n = 0; n < this->blob_bottom_0_->num(); ++n) {
@@ -136,12 +136,12 @@ TYPED_TEST(CropLayerTest, TestCropAll) {
 TYPED_TEST(CropLayerTest, TestCropAllOffset) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
-  layer_param.mutable_crop_param()->set_axis(0);
-  layer_param.mutable_crop_param()->add_offset(0);
-  layer_param.mutable_crop_param()->add_offset(1);
-  layer_param.mutable_crop_param()->add_offset(1);
-  layer_param.mutable_crop_param()->add_offset(2);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(0);
+  layer_param.mutable_caffe_crop_param()->add_offset(0);
+  layer_param.mutable_caffe_crop_param()->add_offset(1);
+  layer_param.mutable_caffe_crop_param()->add_offset(1);
+  layer_param.mutable_caffe_crop_param()->add_offset(2);
+  CaffeCropLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int n = 0; n < this->blob_bottom_0_->num(); ++n) {
@@ -164,10 +164,10 @@ TYPED_TEST(CropLayerTest, TestCropAllOffset) {
 TYPED_TEST(CropLayerTest, TestCropHW) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
-  layer_param.mutable_crop_param()->set_axis(2);
-  layer_param.mutable_crop_param()->add_offset(1);
-  layer_param.mutable_crop_param()->add_offset(2);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(2);
+  layer_param.mutable_caffe_crop_param()->add_offset(1);
+  layer_param.mutable_caffe_crop_param()->add_offset(2);
+  CaffeCropLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int n = 0; n < this->blob_bottom_0_->num(); ++n) {
@@ -202,11 +202,11 @@ TYPED_TEST(CropLayerTest, TestCrop5D) {
   filler.Fill(this->blob_bottom_1_);
   // Make layer
   LayerParameter layer_param;
-  layer_param.mutable_crop_param()->set_axis(2);
-  layer_param.mutable_crop_param()->add_offset(1);
-  layer_param.mutable_crop_param()->add_offset(2);
-  layer_param.mutable_crop_param()->add_offset(0);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(2);
+  layer_param.mutable_caffe_crop_param()->add_offset(1);
+  layer_param.mutable_caffe_crop_param()->add_offset(2);
+  layer_param.mutable_caffe_crop_param()->add_offset(0);
+  CaffeCropLayer<Dtype> layer(layer_param);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   vector<int> bottom_idx = vector<int>(5, 0);
@@ -241,8 +241,8 @@ TYPED_TEST(CropLayerTest, TestCrop5D) {
 TYPED_TEST(CropLayerTest, TestCropAllGradient) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
-  layer_param.mutable_crop_param()->set_axis(0);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(0);
+  CaffeCropLayer<Dtype> layer(layer_param);
   GradientChecker<Dtype> checker(1e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
@@ -251,10 +251,10 @@ TYPED_TEST(CropLayerTest, TestCropAllGradient) {
 TYPED_TEST(CropLayerTest, TestCropHWGradient) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
-  layer_param.mutable_crop_param()->set_axis(2);
-  layer_param.mutable_crop_param()->add_offset(1);
-  layer_param.mutable_crop_param()->add_offset(2);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(2);
+  layer_param.mutable_caffe_crop_param()->add_offset(1);
+  layer_param.mutable_caffe_crop_param()->add_offset(2);
+  CaffeCropLayer<Dtype> layer(layer_param);
   GradientChecker<Dtype> checker(1e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_);
@@ -263,11 +263,11 @@ TYPED_TEST(CropLayerTest, TestCropHWGradient) {
 TYPED_TEST(CropLayerTest, TestCrop5DGradient) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
-  layer_param.mutable_crop_param()->set_axis(2);
-  layer_param.mutable_crop_param()->add_offset(1);
-  layer_param.mutable_crop_param()->add_offset(2);
-  layer_param.mutable_crop_param()->add_offset(0);
-  CropLayer<Dtype> layer(layer_param);
+  layer_param.mutable_caffe_crop_param()->set_axis(2);
+  layer_param.mutable_caffe_crop_param()->add_offset(1);
+  layer_param.mutable_caffe_crop_param()->add_offset(2);
+  layer_param.mutable_caffe_crop_param()->add_offset(0);
+  CaffeCropLayer<Dtype> layer(layer_param);
   // Add dimension to each bottom for >4D check
   vector<int> bottom_0_shape = this->blob_bottom_0_->shape();
   vector<int> bottom_1_shape = this->blob_bottom_1_->shape();

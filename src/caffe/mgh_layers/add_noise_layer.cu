@@ -10,6 +10,8 @@ namespace caffe {
 
 template <typename Dtype>
 void AddNoiseLayer<Dtype>::Forward_gpu(
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+
     const Dtype* bottom_data = bottom[0]->gpu_data();
     Dtype* top_data          = top[0]->mutable_gpu_data();
 
@@ -50,6 +52,40 @@ void AddNoiseLayer<Dtype>::Forward_gpu(
                 caffe_gpu_set(1, Dtype(1), noise_select+top[2]->offset(n,select));
             }
         }
+    } else if(mode_ == AddNoiseParameter_NoiseMode_LINEAR_INTERP){
+        // Sample a few noise levels
+        float *noise_std = new float[shape[0]];
+        caffe_rng_uniform(shape[0], noise_level_[0], noise_level_[noise_level_.size()-1], noise_std);
+        for (int n = 0; n < shape[0]; ++n) {
+            Blob<Dtype> noise;
+            noise.Reshape(imshape);
+            int count = noise.count();
+
+            if(noise_std > 0) {
+                Dtype *noise_data = noise.mutable_gpu_data();
+                caffe_gpu_rng_gaussian(count, Dtype(0), Dtype(noise_std[n]), noise_data );
+                caffe_gpu_add(count, bottom_data+bottom[0]->offset(n), noise_data, top_data+top[0]->offset(n));
+            }else {
+                caffe_copy(count, bottom_data+bottom[0]->offset(n), top_data+top[0]->offset(n));
+            }
+
+            if(top.size() > 1) {
+                caffe_gpu_set(1, Dtype(noise_std[n]), top[1]->mutable_gpu_data()+top[1]->offset(n));
+            }
+            if(top.size() > 2) {
+                int i = 0;
+                while(noise_level_[i] <= noise_std[n]) {
+                    i++;
+                }
+                Dtype dx = (noise_level_[i]-noise_std[n])/(noise_level_[i]-noise_level_[i-1]);
+
+                Dtype* noise_select = top[2]->mutable_gpu_data();
+                caffe_gpu_set(n_noise_levels, Dtype(0), noise_select+top[2]->offset(n));
+                caffe_gpu_set(1, Dtype(dx), noise_select+top[2]->offset(n,i-1));
+                caffe_gpu_set(1, Dtype(1.0-dx), noise_select+top[2]->offset(n,i));
+            }
+        }
+        delete[] noise_std;
     } else {
         // Sample a few noise levels
         float *noise_std = new float[shape[0]];

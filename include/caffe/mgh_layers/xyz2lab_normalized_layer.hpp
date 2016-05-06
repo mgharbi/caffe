@@ -1,5 +1,5 @@
-#ifndef ADD_NOISE_LAYER_HPP_F0D9EWEC
-#define ADD_NOISE_LAYER_HPP_F0D9EWEC
+#ifndef XYZ2LABNORMALIZED_LAYER_HPP_DS5BCO7T
+#define XYZ2LABNORMALIZED_LAYER_HPP_DS5BCO7T
 
 
 
@@ -15,37 +15,34 @@
 namespace caffe {
 
 template <typename Dtype>
-class AddNoiseLayer : public Layer<Dtype> {
+class XYZ2LABNormalizedLayer : public Layer<Dtype> {
  public:
-  explicit AddNoiseLayer(const LayerParameter& param)
+  explicit XYZ2LABNormalizedLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "AddNoise"; }
-  virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline int MaxTopBlobs() const { return 3; }
+  virtual inline const char* type() const { return "XYZ2LABNormalized"; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-      NOT_IMPLEMENTED;
-  }
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
-  vector<float> noise_level_;
-  AddNoiseParameter_NoiseMode mode_;
+  double X_ref, Y_ref, Z_ref;
+  double i_X_ref, i_Y_ref, i_Z_ref;
 
 };
 
 } // caffe
 
-#endif /* end of include guard: ADD_NOISE_LAYER_HPP_F0D9EWEC */
+#endif /* end of include guard: XYZ2LABNORMALIZED_LAYER_HPP_DS5BCO7T */

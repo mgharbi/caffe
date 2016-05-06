@@ -26,7 +26,9 @@ void AddNoiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
         CHECK_EQ(noise_level_.size(), 2) << "AddNoiseLayer should have at exactly two noise_levels when in continuous mode ";
     } else {
         CHECK_GE(noise_level_.size(), 1) << "AddNoiseLayer should have at least one noise_level in discrete mode";
-        CHECK_GE(noise_level_[1], noise_level_[0]) << "AddNoiseLayer: noise level 1 should be <= to noise level 2";
+        for(int i = 0; i < noise_level_.size()-1; ++i){ 
+            CHECK_GE(noise_level_[i+1], noise_level_[i]) << "AddNoiseLayer: noise level 1 should be <= to noise level 2";
+        }
     }
 }
 
@@ -45,7 +47,7 @@ void AddNoiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       top[1]->Reshape(shape);
   }
   if(top.size() > 2) {
-      CHECK_EQ(mode_, AddNoiseParameter_NoiseMode_DISCRETE) << "AddNoise can have 3 outputs only in discrete mode";
+      CHECK_NE(mode_, AddNoiseParameter_NoiseMode_CONTINUOUS) << "AddNoise can have 2 outputs only in continuous mode";
       vector<int> shape = bottom[0]->shape();
       shape[1] = noise_level_.size();
       shape[2] = 1;
@@ -98,6 +100,40 @@ void AddNoiseLayer<Dtype>::Forward_cpu(
                 caffe_set(1, Dtype(1), noise_select+top[2]->offset(n,select));
             }
         }
+    } else if(mode_ == AddNoiseParameter_NoiseMode_LINEAR_INTERP){
+        // Sample a few noise levels
+        float *noise_std = new float[shape[0]];
+        caffe_rng_uniform(shape[0], noise_level_[0], noise_level_[noise_level_.size()-1], noise_std);
+        for (int n = 0; n < shape[0]; ++n) {
+            Blob<Dtype> noise;
+            noise.Reshape(imshape);
+            int count = noise.count();
+
+            if(noise_std > 0) {
+                Dtype *noise_data = noise.mutable_cpu_data();
+                caffe_rng_gaussian(count, Dtype(0), Dtype(noise_std[n]), noise_data );
+                caffe_add(count, bottom_data+bottom[0]->offset(n), noise_data, top_data+top[0]->offset(n));
+            }else {
+                caffe_copy(count, bottom_data+bottom[0]->offset(n), top_data+top[0]->offset(n));
+            }
+
+            if(top.size() > 1) {
+                caffe_set(1, Dtype(noise_std[n]), top[1]->mutable_cpu_data()+top[1]->offset(n));
+            }
+            if(top.size() > 2) {
+                int i = 0;
+                while(noise_level_[i] <= noise_std[n]) {
+                    i++;
+                }
+                Dtype dx = (noise_level_[i]-noise_std[n])/(noise_level_[i]-noise_level_[i-1]);
+
+                Dtype* noise_select = top[2]->mutable_cpu_data();
+                caffe_set(n_noise_levels, Dtype(0), noise_select+top[2]->offset(n));
+                caffe_set(1, Dtype(dx), noise_select+top[2]->offset(n,i-1));
+                caffe_set(1, Dtype(1.0-dx), noise_select+top[2]->offset(n,i));
+            }
+        }
+        delete[] noise_std;
     } else {
         // Sample a few noise levels
         float *noise_std = new float[shape[0]];

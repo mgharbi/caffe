@@ -1414,6 +1414,7 @@ message AddNoiseParameter {
     enum NoiseMode {
         DISCRETE = 1;
         CONTINUOUS = 2;
+        LINEAR_INTERP = 3;
     }
     repeated float noise_level = 1 ;
     optional NoiseMode mode = 4 [default = DISCRETE]; 
